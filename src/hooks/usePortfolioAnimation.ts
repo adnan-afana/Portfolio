@@ -76,10 +76,14 @@ export function usePortfolioAnimation(options: AnimationOptions): void {
 
           const entry = smoothstep(0, cfg.entryEnd, p);
           const exit = smoothstep(cfg.exitStart, 1, p);
-          const entryLift = (1 - entry) * vp.h * 0.55;
-          const exitLift = exit * vp.h * 0.32;
-          const exitShift = exit * vp.w * 0.08;
-          const opacityMul = (0.1 + 0.9 * entry) * (1 - 0.45 * exit);
+          // Entry: the ribbon rises from well below the viewport.
+          const entryLift = (1 - entry) * vp.h * 0.75;
+          // Exit: cards keep climbing up and out toward the upper-right,
+          // shrinking as they go so earlier projects recede into distance.
+          const exitLift = exit * vp.h * 0.5;
+          const exitShift = exit * vp.w * 0.14;
+          const exitShrink = 1 - 0.18 * exit;
+          const opacityMul = (0.05 + 0.95 * entry) * (1 - 0.55 * exit);
 
           let bestSlot = -1;
           let bestDist = Infinity;
@@ -89,6 +93,17 @@ export function usePortfolioAnimation(options: AnimationOptions): void {
             const el = cards[slot];
             if (!el) continue;
             const tr = getCardTransform(slot, totalCards, p, cfg, vp);
+
+            const dist = wrappedDistance(tr.t, ACTIVE_T);
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestSlot = slot;
+            }
+
+            // Extra dominance for the card sitting at the front position.
+            const activeness = 1 - Math.min(dist / (0.7 / totalCards), 1);
+            const scale =
+              tr.scale * (1 + cfg.activeBoost * activeness) * exitShrink;
 
             el.style.transform =
               `translate3d(${(tr.x + exitShift).toFixed(2)}px, ${(
@@ -100,16 +115,15 @@ export function usePortfolioAnimation(options: AnimationOptions): void {
               `rotateX(${tr.rotateX.toFixed(2)}deg) rotateY(${tr.rotateY.toFixed(
                 2
               )}deg) rotateZ(${tr.rotateZ.toFixed(2)}deg) ` +
-              `scale(${tr.scale.toFixed(4)})`;
+              `scale(${scale.toFixed(4)})`;
             el.style.opacity = (tr.opacity * opacityMul).toFixed(3);
             el.style.zIndex = String(tr.zIndex);
+            // Distant cards darken continuously via a CSS-var-driven overlay.
+            el.style.setProperty(
+              "--dim",
+              (tr.dim * (1 - activeness)).toFixed(3)
+            );
             el.classList.toggle("is-back", tr.zn < cfg.backThreshold);
-
-            const dist = wrappedDistance(tr.t, ACTIVE_T);
-            if (dist < bestDist) {
-              bestDist = dist;
-              bestSlot = slot;
-            }
           }
 
           // A slot only counts as "active" when it is genuinely near the front.
@@ -156,7 +170,7 @@ export function usePortfolioAnimation(options: AnimationOptions): void {
         };
 
         const wrap01Drift = (p: number, dir: number) =>
-          dir * (p - 0.5) * vp.w * 0.055;
+          dir * (p - 0.5) * vp.w * 0.04;
 
         const st = ScrollTrigger.create({
           trigger: hero,

@@ -159,8 +159,8 @@
   white-space: nowrap;
   background: linear-gradient(
     180deg,
-    rgba(245, 245, 242, 0.24) 0%,
-    rgba(245, 245, 242, 0.05) 100%
+    rgba(245, 245, 242, 0.13) 0%,
+    rgba(245, 245, 242, 0.03) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -179,8 +179,8 @@
   right: -2%;
   background: linear-gradient(
     180deg,
-    rgba(245, 245, 242, 0.2) 0%,
-    rgba(245, 245, 242, 0.04) 100%
+    rgba(245, 245, 242, 0.11) 0%,
+    rgba(245, 245, 242, 0.025) 100%
   );
   -webkit-background-clip: text;
   background-clip: text;
@@ -307,7 +307,36 @@
 }
 
 .card:global(.is-back) {
-  filter: blur(1.6px) saturate(0.85);
+  filter: blur(2.2px) saturate(0.8);
+  pointer-events: none;
+}
+
+/* Distant cards carry less detail — text recedes with them. */
+.card:global(.is-back) .cardDescription,
+.card:global(.is-back) .cardCta {
+  opacity: 0.3;
+}
+
+.card:global(.is-back) .cardCategory,
+.card:global(.is-back) .cardIndex {
+  opacity: 0.45;
+}
+
+.cardDescription,
+.cardCta,
+.cardCategory,
+.cardIndex {
+  transition: opacity 0.35s ease;
+}
+
+/* Depth darkening overlay, driven per-frame via --dim. */
+.cardLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #04050a;
+  opacity: var(--dim, 0);
   pointer-events: none;
 }
 
