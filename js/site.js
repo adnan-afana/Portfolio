@@ -156,6 +156,17 @@
     let last = window.scrollY;
     addEventListener('scroll', () => { scrollY = window.scrollY; velocity = scrollY - last; last = scrollY; onScroll(); }, { passive: true });
   }
+  /* ---------- In the field: date-driven upcoming/past + countdown ---------- */
+  (function fieldDates() {
+    const d0 = new Date(); const today = new Date(d0.getFullYear(), d0.getMonth(), d0.getDate());
+    const day = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+    $$('[data-show-until]').forEach(el => { if (today > day(el.dataset.showUntil)) el.hidden = true; });
+    $$('[data-show-from]').forEach(el => { if (today >= day(el.dataset.showFrom)) el.hidden = false; });
+    $$('[data-countdown]').forEach(el => {
+      const n = Math.round((day(el.dataset.countdown) - today) / 864e5);
+      el.textContent = n > 1 ? 'In ' + n + ' days' : n === 1 ? 'Tomorrow' : n === 0 ? 'Today' : 'Past';
+    });
+  })();
   /* ---------- Work / Activities toggle ---------- */
   const toggle = $('#viewToggle'), tInd = $('#toggleInd'), tabs = $$('[data-view]', toggle);
   const views = { work: $('#workView'), activities: $('#activities') };
@@ -188,7 +199,7 @@
     if (!window.gsap || reduce) { swap(); return; }
     switching = true;
     const vt = $('#vt'), slats = $$('#vt i'), lbl = $('#vtLabel');
-    lbl.textContent = ($('[data-view="' + v + '"]') || {}).textContent || (v === 'work' ? 'Work' : 'Activities');
+    lbl.textContent = ($('[data-view="' + v + '"]') || {}).textContent || (v === 'work' ? 'Work' : 'In the field');
     vt.classList.add('on');
     gsap.timeline({ onComplete: () => { vt.classList.remove('on'); gsap.set(slats, { clearProps: 'transform,transformOrigin' }); switching = false; } })
       .set(slats, { transformOrigin: '50% 100%' })
