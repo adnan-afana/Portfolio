@@ -760,6 +760,11 @@ section{position:relative}
 .is-field #hero,.is-field .band{display:none}
 .is-field .fld-intro{padding-top:clamp(120px,12vw,180px)}
 .fld-intro{padding-block:clamp(96px,11vw,160px) clamp(32px,4vw,56px)}
+.fld-topics{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px;font-size:11px}
+.fld-topics li{border:1px solid var(--line);padding:7px 12px;line-height:1;color:var(--muted);transition:border-color .3s,color .3s}
+.fld-topics li:hover{border-color:var(--redline);color:var(--redline)}
+.fld-intro .sec-head{align-items:flex-end}
+@media (max-width:700px){.fld-topics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%}.fld-topics li{text-align:center;padding:9px 4px}}
 .fld-intro-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:32px clamp(32px,6vw,96px);align-items:end}
 .fld-lead{margin:0;font-family:var(--f-display);font-weight:500;font-size:clamp(20px,2vw,30px);line-height:1.25;letter-spacing:-.01em;max-width:34ch;text-wrap:pretty}
 .fld-index{display:flex;flex-direction:column;border-top:1px solid var(--ink)}
