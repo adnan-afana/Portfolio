@@ -7,7 +7,7 @@ A static, single-page site with scroll-driven motion: a loader, smooth scrolling
 - **Work** has case studies for LeaseTeq, Shannon Trust: Turning Pages, Abacus Mobile App, MonMedX, Magrabi Hospitals, Boka and a cold-room control system. Each project's preview is rebuilt as live HTML, SVG and CSS with its own animation.
 - **In the field** covers workshops, talks, consulting, mentoring and community in Kingston: a photo gallery, an upcoming-event card, past workshops, consulting and mentoring, community organizations and a writing section.
 
-Live: https://adnan-afana-portfolio.vercel.app
+Live: https://adnanafana.com
 
 ## Structure
 
@@ -45,4 +45,4 @@ All content lives in `index.html`, inside `<div id="activities">`.
 
 ## Deploy
 
-The live site is the Vercel project `adnan-afana-portfolio`, deployed from this repository's root with no build step.
+The live site is the Vercel project `adnan-afana-portfolio`, deployed from this repository's root with no build step, and served at adnanafana.com (www redirects to it). `vercel.json` sends old case-study URLs from the previous site (`/project/...`) to the matching case study.
