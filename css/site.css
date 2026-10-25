@@ -815,6 +815,10 @@ section{position:relative}
 .fld-card.is-draft{border-top-style:dashed;border-top-color:var(--muted)}
 .fld-card.is-draft h4{color:var(--muted)}
 .fld-rows .row h3{font-size:clamp(22px,2.2vw,34px)}
+.fld-rows .fld-more{border-bottom-style:dashed}
+.fld-rows .fld-more h3{color:var(--muted);font-weight:500}
+.fld-rows .fld-more .arrow{color:var(--muted)}
+.fld-rows .fld-more:hover .arrow{transform:none}
 @media (max-width:1024px){
   .fld-intro-grid{grid-template-columns:minmax(0,1fr)}
   .fld-item{grid-template-columns:minmax(0,1fr)}
