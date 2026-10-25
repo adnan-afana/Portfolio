@@ -141,7 +141,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;paddin
 .hero-anno::before{content:"";position:absolute;left:0;right:0;top:4px;height:1px;background:var(--redline)}
 .hero-anno span{position:absolute;left:50%;top:-5px;transform:translateX(-50%);background:var(--paper);padding:0 6px;color:var(--redline);font-size:10px}
 .hero-foot{margin-top:clamp(12px,1.6vw,22px);display:grid;grid-template-columns:minmax(0,1fr);gap:32px 48px;align-items:end}
-.hero-lead{max-width:44ch;font-size:clamp(17px,1.35vw,20px);line-height:1.5;margin:0}
+.hero-lead{max-width:50ch;font-size:clamp(17px,1.35vw,20px);line-height:1.5;margin:0}
 .ctas{display:flex;flex-wrap:wrap;gap:12px}
 .btn{display:inline-flex;align-items:center;gap:12px;height:46px;padding:0 18px;border:1px solid var(--ink);
   font-family:var(--f-mono);font-size:12px;letter-spacing:.05em;text-transform:uppercase;position:relative;overflow:hidden;isolation:isolate;
