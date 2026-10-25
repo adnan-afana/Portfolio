@@ -167,6 +167,22 @@
       el.textContent = n > 1 ? 'In ' + n + ' days' : n === 1 ? 'Tomorrow' : n === 0 ? 'Today' : 'Past';
     });
   })();
+  /* ---------- In the field: photo strip arrows ---------- */
+  (function fieldStrip() {
+    const strip = $('#fldStrip'); if (!strip) return;
+    const btns = $$('.fld-gal-btn');
+    const sync = () => {
+      const max = strip.scrollWidth - strip.clientWidth - 2;
+      btns.forEach(b => { b.disabled = b.dataset.dir === '-1' ? strip.scrollLeft <= 2 : strip.scrollLeft >= max; });
+    };
+    btns.forEach(b => b.addEventListener('click', () => {
+      strip.scrollBy({ left: Number(b.dataset.dir) * strip.clientWidth * .8, behavior: reduce ? 'auto' : 'smooth' });
+    }));
+    strip.addEventListener('scroll', sync, { passive: true });
+    addEventListener('resize', sync);
+    new MutationObserver(sync).observe($('#activities'), { attributes: true, attributeFilter: ['hidden'] });
+    sync();
+  })();
   /* ---------- Work / Activities toggle ---------- */
   const toggle = $('#viewToggle'), tInd = $('#toggleInd'), tabs = $$('[data-view]', toggle);
   const views = { work: $('#workView'), activities: $('#activities') };
