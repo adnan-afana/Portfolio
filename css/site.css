@@ -794,7 +794,8 @@ section{position:relative}
 .fld-shot-item{flex:none;scroll-snap-align:start}
 .fld-shot-item figure{margin:0;display:flex;flex-direction:column;gap:12px}
 .fld-strip{--h:clamp(280px,32vw,460px)}
-.fld-shot-item img{display:block;width:min(84vw,calc(var(--h) * var(--r,1.5)));height:auto;aspect-ratio:var(--r,1.5);object-fit:cover;background:var(--panel);border:1px solid var(--line)}
+.fld-shot-item img{display:block;width:min(84vw,calc(var(--h) * 4 / 3));height:auto;aspect-ratio:4/3;object-fit:cover;object-position:var(--pos,50% 50%);background:var(--panel);border:1px solid var(--line)}
+.fld-shot-item img.is-slide{object-fit:contain;background:#FBF9F4}
 .fld-shot-item figcaption{display:flex;flex-direction:column;gap:4px;max-width:min(36ch,82vw)}
 .fld-shot-item figcaption b{font-family:var(--f-display);font-weight:700;font-size:17px;letter-spacing:-.01em;line-height:1.2}
 .fld-shot-item figcaption .mono{color:var(--muted);font-size:11px}
