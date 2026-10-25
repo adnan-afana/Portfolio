@@ -765,7 +765,8 @@ section{position:relative}
 .fld-eyebrow::before{flex:none}
 .fld-eb{display:flex;flex-direction:column;gap:6px}
 .fld-eb>span{white-space:nowrap}
-@media (max-width:400px){.fld-eyebrow{font-size:11px}}
+.fld-eb-m{display:none}
+@media (max-width:700px){.fld-eb-d{display:none}.fld-eb-m{display:flex}}
 .fld-intro-grid{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,5fr);gap:32px clamp(32px,6vw,96px);align-items:end}
 .fld-lead{margin:0;font-family:var(--f-display);font-weight:500;font-size:clamp(20px,2vw,30px);line-height:1.25;letter-spacing:-.01em;max-width:34ch;text-wrap:pretty}
 .fld-index{display:flex;flex-direction:column;border-top:1px solid var(--ink)}
