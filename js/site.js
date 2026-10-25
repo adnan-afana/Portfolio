@@ -182,7 +182,7 @@
   let switching = false;
   function jump(target) {
     if (lenis) lenis.scrollTo(target, { offset: -80, immediate: true, force: true });
-    else { const y = target.getBoundingClientRect().top + window.scrollY - 80; window.scrollTo(0, Math.max(0, y)); }
+    else { const y = target === 0 ? 0 : target.getBoundingClientRect().top + window.scrollY - 80; window.scrollTo(0, Math.max(0, y)); }
   }
   function setView(v, target) {
     if (switching) return;
@@ -193,8 +193,9 @@
     const show = views[v], hide = views[v === 'work' ? 'activities' : 'work'];
     const swap = () => {
       hide.hidden = true; show.hidden = false;
+      document.body.classList.toggle('is-field', v === 'activities');
       if (window.ScrollTrigger) ScrollTrigger.refresh();
-      jump(target || show);
+      jump(target || (v === 'work' ? 0 : show));
     };
     if (!window.gsap || reduce) { swap(); return; }
     switching = true;
@@ -210,7 +211,7 @@
       .to(lbl, { opacity: 0, y: -10, duration: .25, ease: 'power2.in' }, '+=.2')
       .to(slats, { scaleY: 0, duration: .65, ease: 'expo.inOut', stagger: { each: .045, from: 'start' } }, '<')
       .fromTo(show.querySelectorAll(':scope > section > *'), { y: 32, opacity: 0 },
-        { y: 0, opacity: 1, duration: .85, ease: 'expo.out', stagger: .07, clearProps: 'transform,opacity' }, '-=.4');
+        { y: 0, opacity: 1, duration: .85, ease: 'expo.out', stagger: { amount: .4 }, clearProps: 'transform,opacity' }, '-=.4');
   }
   tabs.forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 
