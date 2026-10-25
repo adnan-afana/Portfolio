@@ -2,6 +2,7 @@
   const $ = (s, r = document) => r.querySelector(s);
   const $$ = (s, r = document) => [...r.querySelectorAll(s)];
   const root = document.documentElement;
+  const BASE_TITLE = document.title;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
   const hasGsap = !!(window.gsap && window.ScrollTrigger);
@@ -1028,7 +1029,7 @@
       cs.classList.remove('open');
       setTimeout(() => { if (openIdx < 0) { cs.hidden = true; body.innerHTML = ''; } }, reduce ? 0 : 700);
       lock(false);
-      document.title = 'Adnan Afana Portfolio';
+      document.title = BASE_TITLE;
       if (fromUi && location.hash.startsWith('#case/')) history.replaceState(null, '', location.pathname + location.search);
       const back = (cards[i] && $('.case-link', cards[i])) || lastFocus;
       if (back && back.focus) back.focus({ preventScroll: true });
