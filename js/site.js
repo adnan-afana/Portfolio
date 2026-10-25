@@ -680,107 +680,221 @@
 
   /* ---------- case studies: full-screen view opened from each Selected work card ---------- */
   (function caseStudies() {
+    /* Each case is a header (title, sub, meta) plus an ordered list of sections.
+       A section has an eyebrow (k) and any of: lead, text[], chips[], users[[h, d|list]],
+       steps[{h, d, label, list, cols, result, cap}], take[str|[h, d]], link, note. */
     const CASES = [
       {
         slug: 'leaseteq', title: 'LeaseTeq', sub: 'A multi-portal vehicle leasing platform for customers, dealers and operations teams across five European markets.',
-        meta: [['Role', 'Product Designer'], ['Client', 'LeaseTeq'], ['Year', '2026'], ['Scope', 'Customer, Dealer and Operations portals']],
-        overview: 'LeaseTeq connects customers, dealerships, financial partners and operations teams in one leasing platform running in Switzerland, Germany, France, Italy and Austria. As Product Designer I worked with the Product Owner and engineers across all three portals: Customer, Dealer and Operations.',
-        challenge: 'Leasing ran on disconnected systems, manual paperwork, complex approvals and little visibility between stakeholders. Onboarding was slow and the process was inefficient. The goal was one digital ecosystem that could support several markets and business models.',
-        role: ['Product discovery workshops', 'User flows and information architecture', 'Wireframes and UI design', 'Design system', 'Interaction design', 'Design QA with engineering', 'Feature prioritization support', 'UX reviews of shipped features'],
-        users: [['Customers', 'Apply for leasing, upload documents and track progress.'], ['Dealers', 'Create and manage applications, monitor contracts, and manage commissions and incentives.'], ['Operations teams', 'Review applications, manage risk and approvals, activate contracts and monitor lifecycle events.']],
-        decisions: [
-          ['Designing a multi-sided platform', 'I mapped how the stakeholders relate, defined cross-portal workflows and standardised shared patterns and status messages, so each role keeps its own workflow while everyone stays connected.'],
-          ['Complex journeys without scrolling', 'Most screens had to fit a single laptop viewport. Progressive disclosure, focused steps and contextual guidance let people complete long applications covering personal, company, income, expense and vehicle details.'],
-          ['Making the finance understandable', 'Residual values, special payments, rebates and commissions were hard to follow. Plain terminology, inline explanations and a live monthly payment show how duration, mileage and special payments change the cost.'],
-          ['A smarter eligibility check', 'Instead of an outright rejection, the affordability check now suggests ways to qualify: add a partner’s income, add household income, or raise the special payment.'],
-          ['One system, three portals', 'Shared patterns for status, forms, tables, modals, notifications, documents and action hierarchy keep the three portals consistent and let the product scale quickly.'],
-          ['Contract operations for internal teams', 'Contract tabs were reordered around decisions rather than process order, with activity logs, smart assignment and reassignment, approval visibility and status timelines.'],
-          ['Dynamic contract lifecycles', 'Status timelines, contextual banners, action-based notifications and lifecycle tracking show every stakeholder where a contract stands and what happens next.']
-        ],
-        outcome: 'LeaseTeq grew into a scalable leasing ecosystem serving stakeholders across Europe. Workflows became faster and more efficient, the platform expanded into new markets, and it added partners including Tesla, Hyundai and BAWAG.',
-        takeaways: ['Simplify the system, not just the screen: good product design here meant understanding how people, processes and data connect across the whole ecosystem.', 'A shared design system is what made three portals and five markets manageable.', 'Close collaboration with engineering, reviewing builds, edge cases and responsive behaviour, protected the quality of what shipped.']
+        meta: [['Role', 'Product Designer'], ['Client', 'LeaseTeq'], ['Service', 'Vehicle leasing platform'], ['Year', '2026']],
+        sections: [
+          { k: 'Overview', lead: 'LeaseTeq connects customers, dealerships, financial partners and operations teams across the whole leasing lifecycle, in one platform.',
+            text: ['It runs in Switzerland, Germany, France, Italy and Austria, and streamlines leasing, approval and contract management while letting every stakeholder work together.', 'As Product Designer I worked with the Product Owner and the engineering team to design all three portals: Customer, Dealer and Operations.'] },
+          { k: 'The problem', text: ['Traditional leasing ran on disconnected systems, manual document handling, complex approval workflows and little visibility between stakeholders. That meant operational inefficiency, communication gaps and slow onboarding for customers and dealers.', 'The goal was to turn the process into a scalable digital ecosystem that supports several markets, stakeholders and business models, without losing a seamless experience.'] },
+          { k: 'My role', chips: ['Product discovery workshops', 'User flows', 'Information architecture', 'Wireframing', 'UI design', 'Design system', 'Interaction design', 'Design QA', 'Engineering collaboration', 'Feature prioritization support', 'UX reviews of shipped features'] },
+          { k: 'Who it serves', users: [
+            ['Customers', ['Apply for vehicle leasing', 'Upload required documents', 'Track application progress']],
+            ['Dealers', ['Create and manage applications', 'Monitor contract status', 'Manage commissions and incentives']],
+            ['Operations teams', ['Review applications', 'Manage risk and approvals', 'Activate contracts', 'Monitor lifecycle events']]
+          ] },
+          { k: 'Key challenges', steps: [
+            { h: 'Designing a multi-sided platform', d: 'Every stakeholder group had its own goals, workflows, permissions and responsibilities, yet all of their interactions had to stay connected across the leasing lifecycle.',
+              label: 'What I did', list: ['Mapped stakeholder relationships', 'Defined cross-portal workflows', 'Standardized shared patterns', 'Unified status communication across portals', 'Created reusable interaction models'],
+              result: 'Customers, dealers, operations teams and financial partners collaborate efficiently, each with workflows tailored to their needs.' },
+            { h: 'Complex leasing journeys without scrolling', d: 'Most experiences had to fit a single viewport. The business wanted people to understand information at a glance, avoid long forms and finish applications with minimal friction.',
+              label: 'What I did', list: ['Applied progressive disclosure', 'Split large workflows into focused steps', 'Prioritized essential information', 'Added contextual guidance', 'Optimized layouts for common laptop resolutions'],
+              result: 'People complete applications covering personal, company, ownership, employment, income, expense and vehicle details through a structured, manageable flow.' },
+            { h: 'Simplifying financial complexity', d: 'Residual values, special payments, interest rates, rebates, subsidies and commission structures are unfamiliar to many users.',
+              label: 'What I did', list: ['Simplified terminology', 'Introduced contextual explanations', 'Designed real-time calculation feedback', 'Showed the monthly payment updating live'],
+              result: 'Users see instantly how duration, mileage and special payments change the monthly cost, which builds confidence while configuring a lease.' },
+            { h: 'A smarter eligibility experience', d: 'Qualification requirements created friction. The traditional approach ended in an outright rejection after the affordability check.',
+              label: 'Recovery paths instead of dead ends', list: ['Add a partner’s income', 'Include household income', 'Increase the special payment'],
+              result: 'Rejection became guidance: people see other ways to qualify instead of abandoning the application.' },
+            { h: 'Three portals, one consistent experience', d: 'Each portal serves different users, but the ecosystem had to feel like one product.',
+              label: 'Reusable patterns for', list: ['Status communication', 'Form structures', 'Tables', 'Modals', 'Notifications', 'Document management', 'Action hierarchies'],
+              result: 'The platform scaled faster, with a consistent experience across the Customer, Dealer and Operations portals.' },
+            { h: 'Redesigning contract operations', d: 'Operations users handle large contract volumes every day and need the most relevant information first. Early workflows ordered information by process rather than by operational priority, so I reorganised contract management around the decisions people make.',
+              cols: [['Before activation', ['Contract status', 'History', 'Documents', 'Finance', 'Notes']], ['After activation', ['Contract status', 'Transactions', 'Finance', 'Documents']], ['Also added', ['Activity logs', 'Smart assignment flows', 'Reassignment workflows', 'Approval visibility', 'Status timelines']]],
+              result: 'Teams reach critical information faster, with less navigation and smoother workflows.' },
+            { h: 'Managing dynamic contract lifecycles', d: 'A contract can move through review, verification, approval, delivery, activation, ownership transfer, buyout, termination and completion. Its status had to be clear without overwhelming anyone.',
+              label: 'Solution', list: ['Status timelines', 'Contextual banners', 'Action-based notifications', 'Lifecycle tracking components'],
+              result: 'Every stakeholder sees the current status, the actions required and the milestones ahead.' }
+          ] },
+          { k: 'Design system', text: ['Consistency mattered more with every new country and portal, so I established reusable foundations for the whole platform.'],
+            chips: ['Buttons', 'Forms', 'Tables', 'Modals', 'Status indicators', 'Banners', 'Navigation patterns', 'Responsive layouts', 'Typography scales'],
+            result: 'The design system sped up feature delivery while keeping the product cohesive.' },
+          { k: 'Working with engineering', chips: ['Reviewing implemented features', 'Identifying UX inconsistencies', 'Clarifying edge cases', 'Suggesting interaction improvements', 'Supporting responsive behaviour', 'Design quality checks before release'],
+            result: 'Fewer implementation gaps and consistently high product quality.' },
+          { k: 'Business impact', cls: 'cs-out', lead: 'LeaseTeq grew into a scalable leasing ecosystem serving customers, dealers, operations teams and financial partners across Europe.',
+            take: ['Expanded into multiple markets and streamlined operational workflows', 'Established strategic partnerships with Tesla, Hyundai and BAWAG', 'Laid the foundation for future OEM and broker offerings', 'Improved visibility and efficiency across the leasing lifecycle'] },
+          { k: 'What I learned', text: ['This project strengthened my ability to simplify complex systems involving many stakeholders, business requirements, operational processes and financial workflows.', 'It reinforced the importance of designing beyond individual screens: focusing on how people, systems and processes connect across the product, creating clarity within complexity, and building experiences that scale with the business.'] },
+          { k: 'Takeaways', take: ['One of the most complex products I have worked on: three portals, several stakeholder groups and five European markets.', 'Great product design means understanding how people, systems and processes connect across an entire ecosystem, not just creating screens.', 'A shared design system is what made three portals and five markets manageable.'] },
+          { k: 'More on request', note: 'Because of the project’s size and complexity, this case study covers only part of the work. I’m happy to walk you through more workflows, design decisions and product challenges.', cta: 'Schedule a conversation' }
+        ]
       },
       {
         slug: 'shannon-trust', title: 'Shannon Trust: Turning Pages', sub: 'An accessible reading platform for prison learners, redesigned around calm, guided and audio-first interactions.',
-        meta: [['Role', 'UX/UI Designer'], ['Client', 'Turning Pages'], ['Year', '2023'], ['Focus', 'Accessibility, responsive design']],
-        overview: 'Shannon Trust’s Turning Pages platform helps prison learners with low literacy and little digital experience learn to read. It serves learners, facilitators and coaches. My work focused on simplifying interactions, reducing cognitive load and shaping the interface around feedback from facilitators and coaches.',
-        challenge: 'Learners had very different literacy levels, limited digital experience and disliked anything that felt playful or childish. Direct usability testing with learners wasn’t possible, so feedback came through facilitators and coaches. The design had to balance accessibility, emotional sensitivity, technical limits and tight deadlines.',
-        role: ['Accessibility-focused UX/UI design', 'Responsive design', 'User testing collaboration through facilitators', 'Design iteration with project managers and developers'],
-        decisions: [
-          ['One split voice-action button', 'Two separate buttons, one for the action and one to hear its label, confused learners. I merged them into a single split button: the left side plays the audio, the right side performs the action.'],
-          ['Guided learning journeys', 'Exercises used to be isolated screens. They became step-by-step journeys that show where you are, what you have finished and what comes next, without heavy gamification.'],
-          ['Visual restraint as a UX decision', 'Learners rejected bright colours, decorative illustration and celebratory messages. The redesign uses a calmer hierarchy, simpler layouts, restrained colour, icons and neutral microcopy.'],
-          ['Support for facilitators and coaches', 'A step-by-step onboarding flow introduces the platform’s key features, with guidance available from the profile so staff rely less on outside help.']
-        ],
-        outcome: 'The platform became easier to navigate, with clearer guided learning paths, less visual distraction and audio support throughout. Facilitators and coaches got better onboarding and guidance, achieved despite limited learner access, sensitive content and tight timelines.',
-        takeaways: ['Indirect research can still be rigorous when you listen closely to the people who work with users every day.', 'For this audience, restraint and respect mattered more than delight.', 'Within real constraints, focus on the changes with the biggest usability impact.']
+        meta: [['Role', 'UX/UI Designer'], ['Client', 'Shannon Trust · Turning Pages'], ['Service', 'Accessibility platform'], ['Year', '2023']],
+        sections: [
+          { k: 'Overview', lead: 'Shannon Trust built Turning Pages to help prison learners improve their literacy through guided learning.',
+            text: ['It is designed for people with low literacy and little digital experience, and serves three groups: learners, facilitators and coaches. It has to be emotionally considerate, accessible and easy to navigate in a highly constrained prison learning environment.', 'My work improved the overall experience and visual design: simplifying interactions, reducing cognitive load and aligning the interface with learners’ needs, based on feedback from facilitators and coaches.'] },
+          { k: 'My role', chips: ['UX/UI design', 'Accessibility-focused product design', 'Responsive design', 'User testing collaboration', 'Design iteration and experience enhancement'],
+            text: ['I worked closely with project managers and developers to turn existing journeys into more accessible, intuitive experiences, driven by facilitator and coach feedback and within tight time and delivery constraints.'] },
+          { k: 'The challenge', text: ['Designing for prison learners raised accessibility and emotional challenges well beyond typical educational UX. Usability testing with learners wasn’t possible because of prison restrictions, so all feedback came indirectly through facilitators and coaches.'],
+            groups: [['Learners', ['Had very different literacy levels', 'Were unfamiliar with digital products', 'Needed simplified interaction patterns', 'Rejected colourful or playful interfaces', 'Reacted badly to childlike illustration and messaging']], ['The design had to balance', ['Accessibility', 'Emotional sensitivity', 'Usability', 'Technical limitations', 'Delivery timelines', 'Stakeholder constraints']]],
+            after: 'The goal: an experience that feels supportive, clear and engaging.' },
+          { k: 'Key decisions', steps: [
+            { h: 'One split voice-action button', d: 'The main goal was to reduce cognitive friction. The original design used two separate buttons: one to perform an action, another to hear its label read aloud, which confused people with limited reading ability. I merged them into a single split button: the left side plays the audio, the right side performs the action.',
+              result: 'Less cognitive overhead, with audio support intact.', cap: 'Two actions turned into one accessibility-first pattern.' },
+            { h: 'Guided learning journeys', d: 'Learners needed to know where they were, what they had finished and what came next. Exercises changed from isolated screens into a guided, step-by-step journey with clear progression, giving motivation and structure without heavy gamification or distracting visuals.' },
+            { h: 'Visual restraint as a UX decision', d: 'Facilitators and coaches told us learners strongly rejected childish or playful interfaces: bright colours, decorative illustration and celebratory messages caused discomfort and disengagement.',
+              label: 'Design shifts', list: ['Calmer visual hierarchy', 'Simplified layouts', 'Icon-based communication', 'Restrained colour', 'Minimal illustration', 'Clearer typography and spacing'],
+              more: 'Microcopy changed too: celebratory lines like “Hooray! You did it!” became neutral, respectful language.',
+              result: 'A supportive, dignified experience rather than a patronising one.' },
+            { h: 'Supporting facilitators and coaches', d: 'Staff needed help getting started. I designed a step-by-step onboarding flow that introduces the platform’s key features, with guidance always available from the profile area.',
+              result: 'Less reliance on outside support and more confident navigation.', cap: 'Key features introduced through a structured onboarding journey.' }
+          ] },
+          { k: 'Real-world constraints', take: ['Limited access to end users', 'Indirect research through facilitators and coaches', 'Accessibility requirements', 'Emotional sensitivity', 'Strict timelines and delivery expectations', 'Development feasibility and cost'],
+            after: 'Rather than chasing ideal solutions, I prioritised the improvements with the biggest usability impact within scope.' },
+          { k: 'Outcome', cls: 'cs-out', lead: 'A more accessible, emotionally considerate learning environment for prison learners with low literacy and limited digital experience.',
+            text: ['Simpler interactions and fewer visual distractions made the platform easier to navigate. Learning flows became clearer guided journeys, audio support stayed in place for learners who rely on it, and facilitators and coaches got supportive onboarding and clearer guidance.', 'All of this was achieved despite limited learner access, strict content sensitivity and tight timelines, by translating facilitator feedback into changes that balanced accessibility, emotional sensitivity and practical implementation.'] },
+          { k: 'Takeaways', take: ['Indirect research can still be rigorous when you listen closely to the people who work with users every day.', 'For this audience, restraint and respect mattered more than delight.', 'Within real constraints, focus on the changes with the biggest usability impact.'] }
+        ]
       },
       {
         slug: 'abacus', title: 'Abacus Mobile App', sub: 'A gamified mental math app for children aged 3 to 15 that connects families with trainers and math centres.',
         meta: [['Role', 'Product Designer'], ['Industry', 'EdTech'], ['Year', '2023'], ['Platform', 'Mobile app']],
-        overview: 'Abacus is an interactive mobile app that teaches mental math to children aged 3 to 15. It also connects students with qualified trainers and mental math centres, making the Abacus method easier to reach.',
-        challenge: 'Children lacked accessible, engaging mental math resources, and private tutoring was expensive, especially for families with several children. The app had to make learning fun while staying affordable.',
-        role: ['Stakeholder meetings with the CEO', 'Parent survey and market research', 'Competitor analysis', 'Card sorting and MVP definition', 'Sketching and wireframing', 'High-fidelity prototyping'],
-        decisions: [
-          ['Research with parents', 'I started with meetings with the CEO and a parent survey on attitudes to math education. The core audience: parents aged 25 to 45 in Palestine and Saudi Arabia with children aged 3 to 15.'],
-          ['Card sorting to define the MVP', 'A full set of brainstorming cards was sorted and prioritised to agree the minimum viable product.'],
-          ['Wireframes for the core flows', 'Sketches and wireframes covered the home screen, learning modules, gamified challenges and the trainer booking system.'],
-          ['High-fidelity prototypes', 'Interactive prototypes simulated the full experience: learning modules, gamification, progress tracking, flexible levels and online tutoring.']
-        ],
-        outcome: 'The app was built to raise engagement and retention, give parents tools to follow their child’s progress, reach underserved communities through centre partnerships, and create training opportunities for recent graduates.',
-        takeaways: ['Gamification works best when it supports real skill-building.', 'Card sorting kept a big wish list down to a focused MVP.', 'Designing for parents and children means two audiences on one screen.']
+        sections: [
+          { k: 'Overview', lead: 'Abacus teaches children aged 3 to 15 mental math through interactive, gamified lessons.',
+            text: ['It builds early math skills and connects students with qualified trainers and mental math centres, making the Abacus method easier and more affordable to reach.'] },
+          { k: 'Goals', chips: ['Teach foundational math basics', 'Gamify learning for fun', 'Build complex math skills', 'Partner with math centres'] },
+          { k: 'The problem', text: ['Children had limited access to engaging mental math resources, and private tutoring was expensive, especially for families with several children. The app needed to connect families with qualified tutors and offer lower-cost options.'] },
+          { k: 'Objectives', users: [
+            ['Foundation skills', 'Teach basic math with the abacus in a fun, creative way.'],
+            ['Special needs support', 'Help children with autism, mainly aged 3 to 7, build math skills.'],
+            ['Competitive edge', 'Challenge gifted students and prepare them for global competitions.'],
+            ['Affordability', 'Cut the cost of traditional math education for families with several children.'],
+            ['Training opportunities', 'Let fresh graduates become trainers, with materials and support provided.'],
+            ['Partnerships', 'Work with math centres to track student progress across learning modes.'],
+            ['Awareness', 'Grow awareness and use of the Abacus method in Palestine and the wider region.']
+          ] },
+          { k: 'Research and insights', steps: [
+            { h: 'Meetings and surveys', d: 'Several meetings with the CEO shaped the app’s direction, and a parent survey captured preferences, challenges and attitudes toward math education.' },
+            { h: 'Target audience', d: 'Parents aged 25 to 45 in Palestine and Saudi Arabia with children aged 3 to 15, especially gifted children and those who struggle with math.' },
+            { h: 'Market research', d: 'An analysis of mobile and educational app usage in the target regions, plus a competitor review of leading education apps: their features, downloads and engagement.' },
+            { h: 'Card sorting to define the MVP', d: 'A full set of brainstorming cards was sorted and prioritised by user needs, from mental math fundamentals to tutor connections.',
+              label: 'The MVP', list: ['Interactive learning modules', 'Gamification', 'Progress tracking', 'Online tutoring', 'Parental controls and monitoring'] }
+          ] },
+          { k: 'Design process', steps: [
+            { h: 'Sketches to wireframes', d: 'Sketches came first, then wireframes for the core flows.',
+              label: 'Core screens', list: ['Home: simple navigation for children and parents', 'Learning modules: organised by grade and ability', 'Gamified challenges: competition with peers', 'Trainer booking: parents book sessions with qualified trainers'] },
+            { h: 'High-fidelity prototypes', d: 'Interactive prototypes simulated the full experience so the team could test the flows end to end before build.' }
+          ] },
+          { k: 'Features', users: [
+            ['Interactive learning modules', 'Lessons on addition, subtraction, multiplication and division.'],
+            ['Gamification', 'Math challenges and competitions with peers.'],
+            ['Progress tracking', 'Tools for parents to follow their child’s learning.'],
+            ['Flexible levels', 'Learning paths adjusted to each child’s experience and skill.'],
+            ['Online tutoring', 'Personalised sessions with certified trainers.']
+          ] },
+          { k: 'Outcome', cls: 'cs-out', lead: 'Children engaged more with math through a platform that is enjoyable and easy to use, with better retention and stronger skills.',
+            text: ['Parents can follow their child’s progress, and the gamified structure keeps children motivated. Partnerships with education centres extended learning to underserved communities, and the project created jobs for fresh graduates while supporting math education across the region.'] },
+          { k: 'Takeaways', take: ['Gamification works best when it supports real skill-building.', 'Card sorting kept a big wish list down to a focused MVP.', 'Designing for parents and children means two audiences on one screen.'] }
+        ]
       },
       {
-        slug: 'monmedx', title: 'MonMedX', sub: 'Improvement sprints for a remote healthcare SaaS platform used by clinics across Canada.',
-        meta: [['Role', 'Product Designer'], ['Client', 'Bitlab'], ['Year', '2022'], ['Deliverables', 'UX, UI, Webflow, SEO']],
-        overview: 'MonMedX is a remote healthcare platform for clinic operations and patient management. I joined during its improvement sprints to refine the UI, apply the design system consistently, streamline features, update components and design new functionality for client requirements.',
-        challenge: 'As the platform expanded to more clinics, user feedback surfaced usability problems. Every change had to fit the existing design system while flexing to different medical specialties.',
-        role: ['Discovery and requirements with the CTO', 'Design system extension', 'High-fidelity UI and prototypes', 'Internal user testing', 'Agile collaboration in Jira', 'Developer handoff and documentation'],
-        decisions: [
-          ['Discovery and requirements', 'With the CTO, I turned client meetings into user stories that guided each improvement.'],
-          ['A scalable design system', 'Updates followed the existing colours, type and components, with flexible components that adapt to each clinic’s specialty while keeping one unified look.'],
-          ['UI and prototyping', 'High-fidelity designs and prototypes covered navigation, the clinic dashboard, appointment scheduling and patient profiles.'],
-          ['Testing and iteration', 'Stakeholders tested scheduling, dashboard navigation and record updates. Their feedback improved the readability of clinic data and simplified record editing.'],
-          ['Handoff', 'Final assets went to developers with every component documented in the design system.']
-        ],
-        outcome: 'The improved platform scaled to 250 clinics across Canada and many specialties. Consistent design and scalable components improved clinic management and the overall experience, laying the foundation for further growth.',
-        takeaways: ['Scalability needs consistency with room for flexibility.', 'Regular contact with the CTO, developers and clients kept the work on track.', 'Iterating on real feedback produced better results than big up-front plans.'],
-        link: ['Visit monmedx.com', 'https://monmedx.com']
+        slug: 'monmedx', title: 'MonMedX', sub: 'Improvement sprints for a remote healthcare SaaS platform that now serves 250 clinics across Canada.',
+        meta: [['Role', 'Product Designer'], ['Client', 'Bitlab'], ['Service', 'Healthcare SaaS'], ['Year', '2022']],
+        sections: [
+          { k: 'Overview', lead: 'MonMedX is a remote healthcare platform for clinic operations, patient management and medical workflows across many facilities.',
+            text: ['After its initial launch, I joined during the improvement sprints to refine the UI and keep the design system consistent: streamlining features, updating components and designing new functionality to meet client requirements.'] },
+          { k: 'Deliverables', chips: ['UX design', 'UI design', 'Webflow', 'SEO'] },
+          { k: 'The challenge', text: ['The platform was already live, so the work started by finding pain points. User feedback surfaced usability problems as the product scaled to more clinics, and every change had to fit the existing design system while flexing to different medical specialties.'] },
+          { k: 'My role', chips: ['Discovery and requirements with the CTO', 'Design system extension', 'High-fidelity UI and prototypes', 'Internal user testing', 'Agile collaboration in Jira', 'Developer handoff and documentation'] },
+          { k: 'Process', steps: [
+            { h: 'Discovery and requirements', d: 'User feedback on scaling issues guided which features to prioritise. I worked with the CTO, who turned client meetings into user stories that framed each improvement.' },
+            { h: 'A scalable design system', d: 'Updates followed the existing colours, type, UI elements and components. Because clinics had different needs, I designed flexible components that adapt to each specialty while keeping one unified look and feel.' },
+            { h: 'UI design and prototyping', d: 'High-fidelity prototypes for new features, including better navigation, clinic management tools and patient interaction, built for intuitive, consistent navigation for administrators and patients.',
+              label: 'Key screens', list: ['Clinic dashboard', 'Appointment scheduling', 'Patient profiles'] },
+            { h: 'User testing and feedback', d: 'Internal testing with stakeholders, with client feedback folded in.',
+              label: 'Tasks tested', list: ['Scheduling appointments', 'Navigating the clinic dashboard', 'Updating patient records'],
+              result: 'A simpler interface, more readable clinic-specific data and faster patient record updates.' },
+            { h: 'Collaboration and iteration', d: 'I worked in an agile team with developers, used Jira for tasks, progress and user stories, and joined daily stand-ups with the CTO on design progress and client requirements.' },
+            { h: 'Implementation and handoff', d: 'Final UI assets went to the development team with every component documented in the design system for future scale. The improved platform then launched to more clinics and a wider range of healthcare providers.' }
+          ] },
+          { k: 'Outcome', cls: 'cs-out', lead: 'The platform scaled to 250 clinics across Canada and a wide range of specialties.',
+            text: ['Consistent design and scalable components streamlined clinic management and improved the experience, which led to higher client satisfaction and better adoption. The updates met immediate needs and set the foundation for growth as more clinics joined.'],
+            link: ['Visit monmedx.com', 'https://monmedx.com'] },
+          { k: 'Takeaways', take: [['Scalability is crucial', 'Refining the design system and building adaptable components kept things consistent while the platform grew with the number of clinics.'], ['Collaboration is key', 'Regular contact with stakeholders, the CTO, developers and clients kept the project on track.'], ['Agility improves results', 'Working iteratively let the design evolve with real-time feedback.']] }
+        ]
       },
       {
         slug: 'magrabi', title: 'Magrabi Hospitals & Centers', sub: 'An accessible website redesign for a network of 32 hospitals and centres across the Middle East and Africa.',
-        meta: [['Role', 'Product Designer'], ['Client', 'Dash Company'], ['Year', '2023'], ['Service', 'Healthcare website']],
-        overview: 'Magrabi runs 32 hospitals and centres across the Middle East and Africa. They wanted a user-centred website that makes it simple to find services, understand them and book appointments across Eye, ENT and Dentistry, while being accessible to a very diverse group of patients.',
-        challenge: 'Patients with vision impairments struggled with the old site, and family members needed quick access to booking and service details. Navigation and visual hierarchy made both harder than they should be.',
-        role: ['Client discovery meetings', 'Competitive analysis', '19 user interviews', 'Wireframes and Figma prototypes', 'Usability testing', 'Developer handoff'],
-        decisions: [
-          ['Research first', 'Client meetings, a competitive review of healthcare sites and interviews with 19 patients and family members across Eye Care, ENT and Dentistry defined the problems.'],
-          ['Built-in accessibility tools', 'A screen reader option, adjustable font size, brightness control, adjustable line height and highlights for important sections.'],
-          ['Booking from everywhere', 'Wireframes put appointment booking within reach from several points on every page, with clearer service information and hierarchy.'],
-          ['Tested and refined', 'Patients and family members tested Figma prototypes. Based on their feedback the screen reader toggle became more visible, brightness changes smoother and section highlights better placed.']
-        ],
-        outcome: 'The redesigned website gives patients and their families adjustable text, screen reader support and brightness control, simpler navigation and easier booking. Every feature was documented for developers and checked across devices and browsers.',
-        takeaways: ['Accessibility belongs in the core experience, not hidden in settings.', 'Families are users too: design for the person booking, not only the patient.', 'Small refinements from testing made the accessibility tools actually usable.']
+        meta: [['Role', 'Product Designer'], ['Client', 'Dash Company'], ['Service', 'Healthcare website'], ['Year', '2023']],
+        sections: [
+          { k: 'Overview', lead: 'Magrabi, a leading medical network with 32 hospitals and centres across the Middle East and Africa, wanted a stronger digital presence through a user-centred redesign.',
+            text: ['The new website had to make it simple to navigate, understand services and book appointments across Eye, ENT and Dentistry, and be accessible to a very diverse group of patients.'] },
+          { k: 'Deliverables', chips: ['Enhanced accessibility features', 'Streamlined navigation', 'Simpler appointment booking', 'Improved visual hierarchy'] },
+          { k: 'Discovery and research', steps: [
+            { h: 'Client meetings', d: 'I met the Magrabi team to understand their goals, earlier user feedback and the problems with the old site. They stressed better accessibility, especially for patients with vision impairments.' },
+            { h: 'Competitive analysis', d: 'A review of healthcare websites and industry standards: how competitors handle accessibility, information hierarchy and appointment booking.',
+              label: 'Common features found', list: ['Font size adjustment', 'Screen readers', 'Brightness controls'] }
+          ] },
+          { k: '19 user interviews', users: [['Eye Care', '5 patients and 3 family members'], ['ENT', '3 patients and 2 family members'], ['Dentistry', '3 patients and 3 family members']],
+            take: ['Patients with vision impairments found the old site hard to navigate.', 'Family members needed quick access to booking and service details.'] },
+          { k: 'Key insights', users: [['Accessibility needs', 'Patients with vision impairments needed better readability and usability.'], ['Easier navigation', 'A more intuitive layout for finding services, locations and booking.'], ['Clear visual hierarchy', 'Important sections and actions had to be easy to spot.']] },
+          { k: 'Accessibility toolkit', steps: [
+            { h: 'Screen reader', d: 'Audio navigation for visually impaired users.' },
+            { h: 'Font size control', d: 'Text size that each user can adjust.' },
+            { h: 'Brightness control', d: 'Adjustable screen brightness to reduce strain and improve visibility in different lighting.' },
+            { h: 'Line height adjustment', d: 'More line spacing for clearer, easier reading.' },
+            { h: 'Highlighted sections', d: 'Highlights that make essential information easy to find.' }
+          ] },
+          { k: 'Wireframes and prototypes', steps: [
+            { h: 'Wireframing', d: 'Wireframes mapped each page’s structure around simpler navigation, clear hierarchy and appointment booking reachable from several points on every page.' },
+            { h: 'Low-fidelity prototypes', d: 'Figma prototypes tested layout and navigation flow, with the accessibility features built in so stakeholders could preview the changes early.' }
+          ] },
+          { k: 'Testing and iteration', text: ['Patients and family members tested the Figma prototypes, evaluating every accessibility feature: screen reader, font and brightness controls, line height and section highlights.'],
+            label: 'What changed', take: ['The screen reader toggle became more visible', 'Brightness changes transition more smoothly', 'Section highlights were repositioned so essential information stands out'] },
+          { k: 'Final design and handoff', steps: [
+            { h: 'Finalised design', d: 'A clean, user-friendly interface with intuitive accessibility controls, and redesigned key pages (service descriptions, appointment booking and contact information) for seamless navigation.' },
+            { h: 'Handoff to development', d: 'Each accessibility feature was documented with specifications for developers, then tested in the final product for consistency across devices and browsers.' }
+          ] },
+          { k: 'Outcome', cls: 'cs-out', lead: 'A modern, user-friendly website that puts accessibility and patient engagement first.',
+            text: ['Adjustable font sizes, screen reader support and brightness settings, together with intuitive navigation and a clearer hierarchy, make vital information easier to reach for patients and their families.'] },
+          { k: 'Takeaways', take: ['Accessibility belongs in the core experience, not hidden in settings.', 'Families are users too: design for the person booking, not only the patient.', 'Small refinements from testing made the accessibility tools actually usable.'] }
+        ]
       },
       {
         slug: 'boka', title: 'Boka', sub: 'Customer and provider apps for a beauty and wellness booking marketplace.',
-        meta: [['Role', 'Product Designer'], ['Client', 'Bitlab'], ['Year', '2022'], ['Platform', 'Customer and provider mobile apps']],
-        overview: 'Boka lets people book beauty and wellness services. I redesigned the customer and service provider mobile apps to solve time management, service add-ons and scheduling for freelance providers, and gave feedback to the designer working on the customer desktop UI.',
-        challenge: 'Customers needed fast, simple booking. Providers needed to manage their time efficiently and account for travel between appointments. The booking logic had to handle all of it without making the apps harder to use.',
-        role: ['Research and requirements with the CTO and client', 'User needs definition', 'Wireframes and interactive prototypes', 'Brand integration', 'Developer handoff in Jira'],
-        decisions: [
-          ['Less wasted provider time', '15-minute time slots, with suggested adjacent slots, reduce gaps in a provider’s day.'],
-          ['Add-on management', 'Paid and time-dependent add-ons, with alerts when a chosen slot can’t fit them.'],
-          ['Concurrent services', 'Overlapping appointments still show real availability.'],
-          ['Travel time for freelancers', 'Travel between clients is built into the available slots.']
-        ],
-        outcome: 'Booking became faster for customers and providers, with fewer scheduling conflicts, better use of providers’ time and fewer booking errors.',
-        takeaways: ['Balance simplicity with advanced functionality.', 'Design booking logic to scale with the marketplace.', 'Work closely with the client, project manager and developers.']
+        meta: [['Role', 'Product Designer'], ['Client', 'Bitlab'], ['Service', 'Beauty and wellness'], ['Year', '2022']],
+        sections: [
+          { k: 'Overview', lead: 'Boka connects customers with beauty and wellness providers. I redesigned its customer and provider mobile apps.',
+            text: ['The work tackled time management, service add-ons and scheduling for freelance providers, refining the booking system and making appointment scheduling faster for everyone. I also worked with another designer on the customer desktop UI and gave usability feedback.'] },
+          { k: 'Deliverables', chips: ['Product design', 'UX strategy', 'Brand integration', 'Interactive prototypes'] },
+          { k: 'Research and requirements', text: ['I reviewed feedback from customers and providers, then met the CTO and the client to clarify requirements and pain points. The booking had to feel effortless for customers and efficient for providers managing their day.'],
+            label: 'Key challenges', take: ['Inefficient booking time slots', 'Services that can run at the same time', 'Add-ons that change price or duration', 'Travel time for freelance providers'] },
+          { k: 'User needs', users: [['Customers', 'Fast, straightforward booking with minimal friction when choosing services.'], ['Service providers', 'Efficient time management, offering several services and tracking travel time.']],
+            after: 'Together with the team I prioritised features against these needs and the business goals, then wireframed the booking flow, time slot management and provider controls for both apps.' },
+          { k: 'Design solutions', steps: [
+            { h: 'Less wasted provider time', d: 'Bookings run in 15-minute increments. When a service is shorter than its slot, the system suggests adjacent slots so a provider’s day has fewer gaps.' },
+            { h: 'Add-on management', d: 'Providers list add-ons as paid or time-dependent. If a chosen slot can’t fit the add-ons, the app alerts the customer so they can pick another time.' },
+            { h: 'Simultaneous services', d: 'Providers can mark services that run at the same time, so the app still shows real availability even when they are technically booked.' },
+            { h: 'Travel time for freelancers', d: 'Travel time is built into booking: available slots reflect a provider’s existing appointments and the time it takes to get between them.' }
+          ] },
+          { k: 'Collaboration and handoff', text: ['I worked closely with the development team in Jira, documented every design asset and specification, ran the final handoff and supported implementation to protect the integrity of the design.'] },
+          { k: 'Outcome', cls: 'cs-out', lead: 'Booking became faster and simpler for customers and more efficient for providers.',
+            text: ['Optimised time slots, add-ons and travel time meant fewer scheduling conflicts, better use of providers’ time, fewer booking errors and higher customer satisfaction, and set the stage for future features and growth.'],
+            link: ['View Boka for Business on the App Store', 'https://apps.apple.com/us/app/boka-for-business/id1629895082'] },
+          { k: 'Takeaways', take: [['Efficiency is key', 'Balance simplicity with advanced functionality: cut friction while maximising efficiency.'], ['Scalability matters', 'The booking flow and UI had to adapt to new services and more providers.'], ['Collaboration drives success', 'Close contact with the client, project manager and developers kept requirements and priorities aligned.']] }
+        ]
       },
       {
         slug: 'cold-room', title: '1S1S / 2W1S Cold Room Control System', sub: 'An industrial control interface for monitoring and managing cold room temperatures, compressors, cooling systems, and operating conditions.',
         meta: [['Category', 'Industrial control system'], ['Discipline', 'HMI, UX/UI design']],
-        overview: 'An industrial control interface for monitoring and managing cold room temperatures, compressors, cooling systems, and operating conditions.'
+        sections: [
+          { k: 'Overview', lead: 'An industrial control interface for monitoring and managing cold room temperatures, compressors, cooling systems, and operating conditions.' }
+        ]
       }
     ];
 
@@ -799,10 +913,38 @@
     let openIdx = -1, lastFocus = null, io = null;
     const lock = on => { root.style.overflow = on ? 'hidden' : ''; if (lenis) on ? lenis.stop() : lenis.start(); };
 
+    const mini = arr => `<ul class="cs-mini">${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
+    const lab = t => `<p class="cs-label mono">${esc(t)}</p>`;
+    function step(s, k) {
+      return `<li class="cs-rv"><span class="mono">${String(k + 1).padStart(2, '0')}</span><h3>${esc(s.h)}</h3><div class="cs-sb">`
+        + (s.d ? `<p>${esc(s.d)}</p>` : '')
+        + (s.list ? (s.label ? lab(s.label) : '') + mini(s.list) : '')
+        + (s.cols ? `<div class="cs-cols">${s.cols.map(([h, l]) => `<div>${lab(h)}${mini(l)}</div>`).join('')}</div>` : '')
+        + (s.more ? `<p>${esc(s.more)}</p>` : '')
+        + (s.result ? `<p class="cs-res"><span class="mono">Result</span>${esc(s.result)}</p>` : '')
+        + (s.cap ? `<p class="cs-cap mono">${esc(s.cap)}</p>` : '')
+        + `</div></li>`;
+    }
+    function sec(s) {
+      const take = s.take ? (s.label ? lab(s.label) : '') + `<ul class="cs-take">${s.take.map(t => Array.isArray(t) ? `<li class="cs-rv"><strong>${esc(t[0])}.</strong> ${esc(t[1])}</li>` : `<li class="cs-rv">${esc(t)}</li>`).join('')}</ul>` : '';
+      return `<section class="cs-sec wrap ${s.cls || ''}"><p class="eyebrow mono">${esc(s.k)}</p><div class="cs-c">`
+        + (s.lead ? `<p class="cs-lead cs-rv">${esc(s.lead)}</p>` : '')
+        + (s.text ? s.text.map(t => `<p class="cs-text cs-rv">${esc(t)}</p>`).join('') : '')
+        + (s.groups ? `<div class="cs-cols cs-rv">${s.groups.map(([h, l]) => `<div>${lab(h)}${mini(l)}</div>`).join('')}</div>` : '')
+        + (s.chips ? `<ul class="cs-chips mono cs-rv">${s.chips.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : '')
+        + (s.users ? `<ul class="cs-users">${s.users.map(([h, v]) => `<li class="cs-rv"><strong>${esc(h)}</strong>${Array.isArray(v) ? mini(v) : `<span>${esc(v)}</span>`}</li>`).join('')}</ul>` : '')
+        + take
+        + (s.steps ? `<ol class="cs-steps">${s.steps.map(step).join('')}</ol>` : '')
+        + (s.after ? `<p class="cs-text cs-rv">${esc(s.after)}</p>` : '')
+        + (s.result ? `<p class="cs-res cs-rv"><span class="mono">Result</span>${esc(s.result)}</p>` : '')
+        + (s.link ? `<a class="cs-ext mono cs-rv" href="${s.link[1]}" target="_blank" rel="noopener">${esc(s.link[0])} ↗</a>` : '')
+        + (s.note ? `<div class="cs-note cs-rv"><p>${esc(s.note)}</p>${s.cta ? `<button type="button" class="btn primary" data-cs-contact><span class="btn-label">${esc(s.cta)}</span></button>` : ''}</div>` : '')
+        + `</div></section>`;
+    }
+
     function render(i) {
       const c = CASES[i], n = CASES[(i + 1) % CASES.length];
       const vis = cards[i] && $('.case-vis', cards[i]);
-      const list = arr => arr.map(x => `<li>${esc(x)}</li>`).join('');
       body.innerHTML = `
         <header class="cs-hero wrap">
           <p class="eyebrow mono cs-rv">Case study · ${String(i + 1).padStart(2, '0')}</p>
@@ -811,13 +953,7 @@
           <dl class="cs-meta mono cs-rv">${c.meta.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
         </header>
         <div class="cs-visual wrap cs-rv"></div>
-        <section class="cs-sec wrap"><p class="eyebrow mono">Overview</p><div><p class="cs-lead cs-rv">${esc(c.overview)}</p></div></section>
-        ${c.challenge ? `<section class="cs-sec wrap"><p class="eyebrow mono">The challenge</p><div><p class="cs-text cs-rv">${esc(c.challenge)}</p></div></section>` : ''}
-        ${c.role ? `<section class="cs-sec wrap"><p class="eyebrow mono">My role</p><div><ul class="cs-chips mono cs-rv">${list(c.role)}</ul></div></section>` : ''}
-        ${c.users ? `<section class="cs-sec wrap"><p class="eyebrow mono">Who it serves</p><div><ul class="cs-users">${c.users.map(([k, v]) => `<li class="cs-rv"><strong>${esc(k)}</strong><span>${esc(v)}</span></li>`).join('')}</ul></div></section>` : ''}
-        ${c.decisions ? `<section class="cs-sec wrap"><p class="eyebrow mono">Key decisions</p><div><ol class="cs-steps">${c.decisions.map(([h, d], k) => `<li class="cs-rv"><span class="mono">${String(k + 1).padStart(2, '0')}</span><h3>${esc(h)}</h3><p>${esc(d)}</p></li>`).join('')}</ol></div></section>` : ''}
-        ${c.outcome ? `<section class="cs-sec cs-out wrap"><p class="eyebrow mono">Outcome</p><div><p class="cs-lead cs-rv">${esc(c.outcome)}</p>${c.link ? `<a class="cs-ext mono cs-rv" href="${c.link[1]}" target="_blank" rel="noopener">${esc(c.link[0])} ↗</a>` : ''}</div></section>` : ''}
-        ${c.takeaways ? `<section class="cs-sec wrap"><p class="eyebrow mono">Takeaways</p><div><ul class="cs-take">${list(c.takeaways).replace(/<li>/g, '<li class="cs-rv">')}</ul></div></section>` : ''}
+        ${c.sections.map(sec).join('')}
         <footer class="cs-next wrap">
           <p class="eyebrow mono">Next case</p>
           <a class="cs-next-link" href="#case/${n.slug}"><span class="cs-next-title">${esc(n.title)}</span><span class="cs-next-arrow" aria-hidden="true">→</span></a>
@@ -837,6 +973,11 @@
       }
       countEl.textContent = String(i + 1).padStart(2, '0') + ' / ' + String(CASES.length).padStart(2, '0');
       $$('[data-cs-close]', body).forEach(b => b.addEventListener('click', () => closeCase(true)));
+      $$('[data-cs-contact]', body).forEach(b => b.addEventListener('click', () => {
+        closeCase(true);
+        const t = $('#contact');
+        if (t) setTimeout(() => lenis ? lenis.scrollTo(t, { offset: -40 }) : t.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }), reduce ? 0 : 500);
+      }));
       cs.scrollTop = 0;
       if (io) io.disconnect();
       const items = $$('.cs-rv', body);
