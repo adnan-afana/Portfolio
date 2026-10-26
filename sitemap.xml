@@ -9,4 +9,10 @@
       <image:loc>https://adnanafana.com/assets/og-image.png</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://adnanafana.com/writing/the-one-prompt-myth/</loc>
+    <lastmod>2026-10-26</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
 </urlset>

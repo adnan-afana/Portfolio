@@ -462,6 +462,27 @@
   }
   tabs.forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
 
+  /* deep link into In the field (/#field or /#fld-...), e.g. "All writing" on an article page */
+  let deepTarget = null;
+  (function () {
+    const h = location.hash;
+    if (h !== '#field' && !/^#fld-[\w-]+$/.test(h)) return;
+    const t = h === '#field' ? views.activities : document.querySelector(h);
+    if (!t || !views.activities.contains(t)) return;
+    view = 'activities';
+    tabs.forEach(b => { const on = b.dataset.view === 'activities'; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on); });
+    placeInd();
+    views.work.hidden = true; views.activities.hidden = false;
+    document.body.classList.add('is-field');
+    deepTarget = t;
+  })();
+  const landDeep = () => {
+    if (!deepTarget) return;
+    const t = deepTarget; deepTarget = null;
+    if (window.ScrollTrigger) ScrollTrigger.refresh();
+    jump(t);
+  };
+
   $$('[data-scrollto]').forEach(a => a.addEventListener('click', e => {
     const sel = a.dataset.scrollto, target = $(sel); if (!target) return;
     e.preventDefault();
@@ -1341,7 +1362,7 @@
   })();
 
   /* ---------- no GSAP or reduced motion: page stays fully static ---------- */
-  if (!hasGsap || reduce) { const L = $('#loader'); if (L) L.remove(); return; }
+  if (!hasGsap || reduce) { const L = $('#loader'); if (L) L.remove(); landDeep(); return; }
 
   /* ---------- hero prep + loader ---------- */
   gsap.set('.hero .li', { yPercent: 112, rotate: 2.5 });
@@ -1351,6 +1372,7 @@
 
   function heroIn() {
     if (lenis) lenis.start();
+    landDeep();
     gsap.timeline()
       .to('.hero .li', { yPercent: 0, rotate: 0, duration: 1.4, ease: 'expo.out', stagger: .09 })
       .to('#nav', { autoAlpha: 1, y: 0, duration: 1, ease: 'expo.out' }, .1)

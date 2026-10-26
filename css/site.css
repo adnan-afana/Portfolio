@@ -997,6 +997,14 @@ section{position:relative}
 .fld-notes>.fld-card .fld-kicker{color:var(--redline)}
 .fld-card.is-draft{border-top-style:dashed;border-top-color:var(--muted)}
 .fld-card.is-draft h4{color:var(--muted)}
+.fld-notes>.fld-card.is-post{grid-column:1/-1}
+.fld-post{display:flex;flex-direction:column;gap:12px;align-items:flex-start;width:100%}
+.fld-post h4{font-size:clamp(28px,3.2vw,52px);line-height:1.02;max-width:22ch;transition:color .35s var(--ease)}
+.fld-post:hover h4,.fld-post:focus-visible h4{color:var(--redline)}
+.fld-date-s{color:var(--muted)}
+.fld-read{margin-top:4px;color:var(--redline)}
+.fld-read span{display:inline-block;transition:transform .5s var(--ease)}
+.fld-post:hover .fld-read span{transform:translateX(4px)}
 .fld-rows .row h3{font-size:clamp(22px,2.2vw,34px)}
 .fld-rows .fld-more{border-bottom-style:dashed}
 .fld-rows .fld-more h3{color:var(--muted);font-weight:500}
