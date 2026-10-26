@@ -58,14 +58,175 @@
     closeBtn.addEventListener('click', () => { open(false); fab.focus(); });
     addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) open(false); });
     const add = (cls, text) => { const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; };
-    const settle = (bubble, text) => { bubble.className = 'msg bot'; bubble.textContent = text; };
     const fail = code => Object.assign(new Error(code), { code });
+
+    /* ----- answer rendering: plain sentences plus ```ui {json} layout blocks, built with DOM only (never innerHTML) ----- */
+    const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = String(text); return n; };
+    const str = (v, max) => typeof v === 'string' ? v.trim().slice(0, max) : (typeof v === 'number' ? String(v) : '');
+    const arr = (v, max) => Array.isArray(v) ? v.slice(0, max) : [];
+    function inline(parent, text) { // **bold** only
+      String(text).split(/(\*\*[^*]+\*\*)/).forEach(part => {
+        if (!part) return;
+        if (/^\*\*[^*]+\*\*$/.test(part)) parent.appendChild(el('strong', null, part.slice(2, -2)));
+        else parent.appendChild(document.createTextNode(part));
+      });
+      return parent;
+    }
+    function safeHref(h) {
+      h = str(h, 300);
+      if (/^mailto:[^\s<>"]+$/i.test(h) || /^#[\w\/-]+$/.test(h) || /^https:\/\/[^\s<>"]+$/i.test(h)) return h;
+      return '';
+    }
+    function link(node, href) {
+      href = safeHref(href); if (!href) return node;
+      const a = el('a', node.className); while (node.firstChild) a.appendChild(node.firstChild);
+      a.href = href;
+      if (/^https:/i.test(href) && !href.startsWith(location.origin)) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+      if (href.startsWith('#')) a.addEventListener('click', () => open(false));
+      return a;
+    }
+    const stagger = (n, i) => { n.style.setProperty('--i', i); return n; };
+    const BLOCKS = {
+      list(b) {
+        const ul = el('ul', 'blk blk-list');
+        arr(b.items, 8).forEach((t, i) => { const v = str(typeof t === 'object' && t ? t.text || t.title : t, 240); if (v) ul.appendChild(stagger(inline(el('li'), v), i)); });
+        return ul.children.length ? ul : null;
+      },
+      cards(b) {
+        const g = el('div', 'blk blk-cards');
+        arr(b.items, 6).forEach((c, i) => {
+          if (!c || !str(c.title, 80)) return;
+          let card = el('div', 'blk-card');
+          if (str(c.tag, 30)) card.appendChild(el('span', 'blk-tag mono', str(c.tag, 30)));
+          card.appendChild(el('b', 'blk-card-t', str(c.title, 80)));
+          if (str(c.text, 260)) card.appendChild(inline(el('p'), str(c.text, 260)));
+          if (safeHref(c.link)) { card.appendChild(el('span', 'blk-go mono', 'Open →')); card = link(card, c.link); card.classList.add('is-link'); }
+          g.appendChild(stagger(card, i));
+        });
+        return g.children.length ? g : null;
+      },
+      accordion(b) {
+        const w = el('div', 'blk blk-acc');
+        arr(b.items, 8).forEach((it, i) => {
+          if (!it || !str(it.title, 100)) return;
+          const d = el('details'), sm = el('summary');
+          sm.appendChild(el('span', null, str(it.title, 100))); sm.appendChild(el('i', 'blk-acc-ico', '+'));
+          d.appendChild(sm);
+          if (str(it.text, 600)) d.appendChild(inline(el('p'), str(it.text, 600)));
+          d.addEventListener('toggle', () => { sm.lastChild.textContent = d.open ? '−' : '+'; });
+          w.appendChild(stagger(d, i));
+        });
+        return w.children.length ? w : null;
+      },
+      steps(b) {
+        const ol = el('ol', 'blk blk-steps');
+        arr(b.items, 7).forEach((s, i) => {
+          if (!s || !str(s.title, 100)) return;
+          const li = el('li'); li.appendChild(el('span', 'blk-n mono', String(i + 1).padStart(2, '0')));
+          const body = el('div'); body.appendChild(el('b', null, str(s.title, 100)));
+          if (str(s.text, 260)) body.appendChild(inline(el('p'), str(s.text, 260)));
+          li.appendChild(body); ol.appendChild(stagger(li, i));
+        });
+        return ol.children.length ? ol : null;
+      },
+      timeline(b) {
+        const ol = el('ol', 'blk blk-time');
+        arr(b.items, 10).forEach((t, i) => {
+          if (!t || !str(t.title, 120)) return;
+          const li = el('li');
+          if (str(t.when, 40)) li.appendChild(el('span', 'blk-when mono', str(t.when, 40)));
+          li.appendChild(el('b', null, str(t.title, 120)));
+          if (str(t.text, 240)) li.appendChild(inline(el('p'), str(t.text, 240)));
+          ol.appendChild(stagger(li, i));
+        });
+        return ol.children.length ? ol : null;
+      },
+      stats(b) {
+        const g = el('div', 'blk blk-stats');
+        arr(b.items, 4).forEach((s, i) => {
+          if (!s || !str(s.value, 16)) return;
+          const c = el('div'); c.appendChild(el('b', null, str(s.value, 16)));
+          if (str(s.label, 60)) c.appendChild(el('span', 'mono', str(s.label, 60)));
+          g.appendChild(stagger(c, i));
+        });
+        return g.children.length ? g : null;
+      },
+      quote(b) {
+        const t = str(b.text || (b.items && b.items[0] && b.items[0].text), 400); if (!t) return null;
+        const q = el('figure', 'blk blk-quote'); q.appendChild(inline(el('blockquote'), t));
+        if (str(b.by, 80)) q.appendChild(el('figcaption', 'mono', str(b.by, 80)));
+        return q;
+      },
+      buttons(b) {
+        const w = el('div', 'blk blk-btns');
+        arr(b.items, 3).forEach((it, i) => {
+          if (!it || !str(it.label, 40) || !safeHref(it.href)) return;
+          const n = el('span', 'blk-btn mono' + (w.children.length ? '' : ' is-primary'));
+          n.appendChild(el('span', null, str(it.label, 40))); n.appendChild(el('span', 'arr', '→'));
+          w.appendChild(stagger(link(n, it.href), i));
+        });
+        return w.children.length ? w : null;
+      }
+    };
+    BLOCKS.actions = BLOCKS.buttons; BLOCKS.bullets = BLOCKS.list; BLOCKS.faq = BLOCKS.accordion; BLOCKS.process = BLOCKS.steps;
+    function prose(text) {
+      const frag = document.createDocumentFragment();
+      text.split(/\n{2,}/).forEach(para => {
+        const lines = para.split('\n').map(l => l.trim()).filter(Boolean); if (!lines.length) return;
+        if (lines.every(l => /^[-*•]\s+/.test(l))) {
+          const ul = el('ul', 'blk blk-list'); lines.forEach((l, i) => ul.appendChild(stagger(inline(el('li'), l.replace(/^[-*•]\s+/, '')), i))); frag.appendChild(ul);
+        } else frag.appendChild(inline(el('p', 'msg-p'), lines.join(' ').replace(/^#+\s*/, '')));
+      });
+      return frag;
+    }
+    function segments(text) {
+      const out = []; const re = /```(?:ui|json)?[ \t]*\n?/g; let pos = 0;
+      for (;;) {
+        re.lastIndex = pos; const m = re.exec(text);
+        if (!m) { out.push({ k: 'text', s: text.slice(pos).replace(/`{1,3}[a-z]*$/i, ''), done: true }); break; }
+        out.push({ k: 'text', s: text.slice(pos, m.index), done: true });
+        const close = text.indexOf('```', re.lastIndex);
+        if (close < 0) { out.push({ k: 'ui', s: text.slice(re.lastIndex), done: false }); break; }
+        out.push({ k: 'ui', s: text.slice(re.lastIndex, close), done: true }); pos = close + 3;
+      }
+      return out.filter(g => g.k === 'ui' || g.s.trim());
+    }
+    function block(src) {
+      let b = null; src = src.trim();
+      try { b = JSON.parse(src); } catch (e) { try { b = JSON.parse(src.replace(/,\s*([}\]])/g, '$1')); } catch (e2) { b = null; } }
+      if (!b || typeof b !== 'object') return null;
+      const make = BLOCKS[String(b.type || '').toLowerCase()]; if (!make) return null;
+      try { return make(b); } catch (e) { return null; }
+    }
+    function renderer(bubble) {
+      const nodes = [];
+      return function render(text, final) {
+        const segs = segments(text);
+        if (!final && segs.length && segs[segs.length - 1].k === 'text') segs[segs.length - 1].done = false;
+        bubble.className = 'msg bot rich';
+        segs.forEach((g, i) => {
+          const key = g.k + (g.done ? ':' : '~') + g.s;
+          if (nodes[i] && nodes[i].key === key) return;
+          let n;
+          if (g.k === 'text') { n = el('div', 'msg-prose'); n.appendChild(prose(g.s)); }
+          else if (!g.done) { n = el('div', 'blk blk-wait mono'); n.appendChild(el('i')); n.appendChild(el('span', null, 'Laying it out')); }
+          else { n = block(g.s); if (n) panel.classList.add('is-wide'); else n = el('span', 'blk-none'); }
+          if (nodes[i]) nodes[i].node.replaceWith(n); else bubble.appendChild(n);
+          nodes[i] = { key, node: n };
+        });
+        while (nodes.length > segs.length) nodes.pop().node.remove();
+        if (!bubble.children.length) { bubble.className = 'msg bot thinking'; bubble.textContent = 'Thinking…'; }
+      };
+    }
+
     async function ask(q) {
       q = String(q || '').trim(); if (!q || busy || dead) return;
       busy = true; send.textContent = 'Stop'; sugg.hidden = true;
       add('user', q); input.value = '';
       turns.push({ role: 'user', content: q });
       const bubble = add('bot thinking', 'Thinking…');
+      let render = null;
+      const show = (t, final) => { if (!render) { bubble.textContent = ''; render = renderer(bubble); } render(t, final); };
       ctl = new AbortController();
       let text = '';
       try {
@@ -78,31 +239,36 @@
           throw fail(res.status === 429 ? 'rate_limited' : code);
         }
         const reader = res.body.getReader(), dec = new TextDecoder();
+        const nearBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+        // keep up with the answer, but never scroll its first line out of view
+        const follow = () => { const top = bubble.getBoundingClientRect().top - log.getBoundingClientRect().top + log.scrollTop - 12; log.scrollTop = Math.min(log.scrollHeight - log.clientHeight, top); };
         for (;;) {
           const { value, done } = await reader.read(); if (done) break;
+          const stick = nearBottom();
           text += dec.decode(value, { stream: true });
-          settle(bubble, text); log.scrollTop = log.scrollHeight;
+          if (text.trim()) show(text, false);
+          if (stick) follow();
         }
         text = text.trim();
         if (!text) throw fail('empty');
-        settle(bubble, text);
+        show(text, true);
         turns.push({ role: 'assistant', content: text });
       } catch (e) {
         const code = e && (e.name === 'AbortError' ? 'cancelled' : e.code);
         if (code === 'cancelled') {
-          if (text.trim()) { settle(bubble, text); turns.push({ role: 'assistant', content: text }); } else { bubble.remove(); turns.pop(); }
+          if (text.trim()) { show(text, true); turns.push({ role: 'assistant', content: text }); } else { bubble.remove(); turns.pop(); }
         } else if (OFF.includes(code)) {
           bubble.className = 'msg err';
           bubble.textContent = "The AI chat isn't available right now. You can still email Adnan at adnanafana0@gmail.com.";
           dead = true; input.disabled = true; send.disabled = true; turns.pop();
         } else if (text.trim()) {
-          settle(bubble, text); turns.push({ role: 'assistant', content: text });
+          show(text, true); turns.push({ role: 'assistant', content: text });
           add('err', 'The answer was cut off. Try asking again.');
         } else {
           bubble.className = 'msg err'; bubble.textContent = COPY[code] || 'Something went wrong. Please try again.'; turns.pop();
         }
       } finally {
-        busy = false; ctl = null; if (!dead) send.textContent = 'Send'; log.scrollTop = log.scrollHeight;
+        busy = false; ctl = null; if (!dead) send.textContent = 'Send';
       }
     }
     form.addEventListener('submit', e => { e.preventDefault(); if (busy && ctl) { ctl.abort(); return; } ask(input.value); });

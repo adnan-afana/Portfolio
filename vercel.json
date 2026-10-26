@@ -1,11 +1,49 @@
 {
   "redirects": [
-    { "source": "/project/leaseteq", "destination": "/#case/leaseteq", "permanent": true },
-    { "source": "/project/shannon-trust-turning-pages", "destination": "/#case/shannon-trust", "permanent": true },
-    { "source": "/project/abacus-mobile-app", "destination": "/#case/abacus", "permanent": true },
-    { "source": "/project/monmedx", "destination": "/#case/monmedx", "permanent": true },
-    { "source": "/project/magrabi", "destination": "/#case/magrabi", "permanent": true },
-    { "source": "/project/boka", "destination": "/#case/boka", "permanent": true },
-    { "source": "/project/:slug*", "destination": "/", "permanent": true }
-  ]
+    {
+      "source": "/chat-knowledge.md",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/project/leaseteq",
+      "destination": "/#case/leaseteq",
+      "permanent": true
+    },
+    {
+      "source": "/project/shannon-trust-turning-pages",
+      "destination": "/#case/shannon-trust",
+      "permanent": true
+    },
+    {
+      "source": "/project/abacus-mobile-app",
+      "destination": "/#case/abacus",
+      "permanent": true
+    },
+    {
+      "source": "/project/monmedx",
+      "destination": "/#case/monmedx",
+      "permanent": true
+    },
+    {
+      "source": "/project/magrabi",
+      "destination": "/#case/magrabi",
+      "permanent": true
+    },
+    {
+      "source": "/project/boka",
+      "destination": "/#case/boka",
+      "permanent": true
+    },
+    {
+      "source": "/project/:slug*",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
+  "functions": {
+    "api/chat.js": {
+      "includeFiles": "chat-knowledge.md"
+    }
+  }
 }

@@ -14,6 +14,7 @@ Live: https://adnanafana.com
 ```
 index.html          page markup
 api/chat.js         Ask AI backend (Vercel function)
+chat-knowledge.md   what the Ask AI assistant knows and how it answers
 css/site.css        styles
 js/site.js          interactions and animation
 assets/images/      project imagery
@@ -38,7 +39,11 @@ The libraries load from CDNs.
 
 ## Ask AI about me
 
-The chat panel posts to `api/chat.js`, a Vercel serverless function that streams answers from Claude (Haiku by default). The profile and rules the assistant answers from live in that file, so edit them there.
+The chat panel posts to `api/chat.js`, a Vercel serverless function that streams answers from Claude (Haiku by default).
+
+**To change what the assistant knows or how it answers, edit `chat-knowledge.md`** (plain language: rules, set answers, profile, case studies). Notes inside `<!-- -->` are ignored by the AI. Edit it on github.com and Vercel republishes automatically.
+
+Answers can include layout blocks the AI picks per question: list, cards, accordion, steps, timeline, stats, quote and buttons. The site renders them in its own style (`js/site.js` and the `.blk-*` styles in `css/site.css`); the AI never writes HTML.
 
 - Set `ANTHROPIC_API_KEY` in the Vercel project's environment variables (Production and Preview). Optional: `CHAT_MODEL` to change the model.
 - Guard rails: only the last 10 messages are sent, visitor messages are capped at 500 characters, answers at 400 tokens, requests from other sites are refused, and each IP gets 20 questions per 10 minutes.
