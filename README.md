@@ -59,4 +59,4 @@ All content lives in `index.html`, inside `<div id="activities">`.
 
 ## Deploy
 
-The live site is the Vercel project `adnan-afana-portfolio`, deployed from this repository's root with no build step, and served at adnanafana.com (www redirects to it). `vercel.json` sends old case-study URLs from the previous site (`/project/...`) to the matching case study.
+The live site is the Vercel project `adnan-afana-portfolio`, deployed from this repository's root with no build step, and served at adnanafana.com (www redirects to it). The project is connected to this GitHub repository: every push to `main` publishes to adnanafana.com, and other branches get a preview deployment. `vercel.json` sends old case-study URLs from the previous site (`/project/...`) to the matching case study.
