@@ -384,11 +384,34 @@
     const stmt = $('#statement');
     if (stmt && window.ResizeObserver) new ResizeObserver(() => sec.style.setProperty('--stmt-w', stmt.getBoundingClientRect().width + 'px')).observe(stmt);
     if (slides.length < 2) { $('.tst-count', sec)?.setAttribute('hidden', ''); return; }
-    // pause while someone is reading it (pointer over it, or keyboard focus on the quote)
-    sec.addEventListener('pointerenter', () => { hold = true; sync(); });
-    sec.addEventListener('pointerleave', () => { hold = false; sync(); });
-    stage.addEventListener('focus', () => { hold = true; sync(); });
+    // the timer keeps running under the mouse; it only holds while a keyboard user has the quote focused
+    stage.addEventListener('focus', () => { hold = stage.matches(':focus-visible'); sync(); });
     stage.addEventListener('blur', () => { hold = false; sync(); });
+    // browse without buttons: the custom cursor reads Previous / Next over each half of the quote,
+    // a click (or tap) on that half moves, a swipe moves on touch, and the arrow keys work when focused
+    const go = d => { set(i + d); tstReveal(slides[i]); };
+    const half = x => { const r = stage.getBoundingClientRect(); return x < r.left + r.width / 2 ? -1 : 1; };
+    stage.dataset.cursor = 'Next';
+    stage.addEventListener('mousemove', e => {
+      const label = half(e.clientX) < 0 ? 'Previous' : 'Next';
+      if (stage.dataset.cursor !== label) { stage.dataset.cursor = label; const cl = $('#cursorLabel'); if (cl) cl.textContent = label; }
+    });
+    let sx = null, sy = 0, swiped = false;
+    stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { sx = e.clientX; sy = e.clientY; } swiped = false; });
+    stage.addEventListener('pointerup', e => {
+      if (sx === null) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) { swiped = true; go(dx < 0 ? 1 : -1); }
+    });
+    stage.addEventListener('click', e => {
+      if (swiped) { swiped = false; return; }
+      if (getSelection && String(getSelection()).length) return;   // let people select a quote to copy it
+      go(half(e.clientX));
+    });
+    stage.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    });
     new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }, { threshold: .4 }).observe(sec);
     sync();
   })();
