@@ -518,21 +518,31 @@ section{position:relative}
 @keyframes crAuto{0%{transform:scale(1);opacity:.75}100%{transform:scale(2.3);opacity:0}}
 .cr:not(.run) *{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.cr-fan,.cr-coil,.cr-ping,.cr-auto{animation:none!important}.cr-coil,.cr-ping,.cr-auto,.cr-edge{opacity:0!important}.cr-win{transition:none}.case:hover .cr-win{transform:none}}
-/* Booka: booking flow with travel buffer */
-.flow{display:flex;align-items:center}
-.node{width:15cqi;padding:1.8cqi;background:var(--card);display:flex;flex-direction:column;gap:1cqi;box-shadow:0 1cqi 3cqi color-mix(in srgb,var(--ink) 9%,transparent)}
-.node span{font-size:1.45cqi;color:var(--muted)}
-.node p{margin:0;font-size:1.9cqi;line-height:1.25;font-weight:500}
-.node.on{outline:1px solid var(--redline)}
-.node.on span{color:var(--redline)}
-.edge{position:relative;width:4.4cqi;height:1px;background:var(--muted);overflow:hidden}
-.edge::after{content:"";position:absolute;top:0;left:-40%;width:40%;height:100%;background:var(--redline);animation:edge 1.8s linear infinite}
-@keyframes edge{to{left:100%}}
-.node .meter{height:.5cqi;background:var(--line);position:relative;overflow:hidden}
-.node .meter::after{content:"";position:absolute;inset:0 38% 0 0;background:var(--redline);animation:meter 3s var(--ease) infinite}
-@keyframes meter{0%{right:100%}70%,100%{right:0}}
+/* Booka: the real salon page; the hero photo drifts, a time slot gets picked, the booking goes through, the bell rings */
+.m-bk{--u:calc(48cqi / 532)}
+@media (max-width:899px),(max-height:559px){.m-bk{--u:calc(50cqi / 532)}}
+.cs-visual .m-bk{--u:calc(44cqi / 532)}
+.bk-win{position:relative;width:calc(var(--u)*721);height:calc(var(--u)*532);background:#fff;border-radius:calc(var(--u)*10);overflow:hidden;
+  box-shadow:0 0 0 1px rgba(21,23,26,.06),0 calc(var(--u)*2) calc(var(--u)*4) rgba(21,23,26,.04),0 calc(var(--u)*22) calc(var(--u)*52) calc(var(--u)*-12) rgba(21,23,26,.24);transition:box-shadow .9s var(--ease),transform .9s var(--ease)}
+.case:hover .bk-win,.case:focus-within .bk-win{transform:translateY(calc(var(--u)*-5));box-shadow:0 0 0 1px rgba(21,23,26,.06),0 calc(var(--u)*2) calc(var(--u)*4) rgba(21,23,26,.04),0 calc(var(--u)*34) calc(var(--u)*66) calc(var(--u)*-14) rgba(21,23,26,.3)}
+.bk-base,.bk-ov{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* hero photo (cards and buttons cut out and laid back on top) and portfolio photos: each moves inside its own frame */
+.bk-hero,.bk-ph{position:absolute;overflow:hidden}
+.bk-hero{left:0;top:calc(var(--u)*56);width:calc(var(--u)*721);height:calc(var(--u)*163)}
+.bk-ph1{left:calc(var(--u)*81);top:calc(var(--u)*426);width:calc(var(--u)*177);height:calc(var(--u)*106)}
+.bk-ph2{left:calc(var(--u)*266);top:calc(var(--u)*426);width:calc(var(--u)*176);height:calc(var(--u)*106)}
+.bk-hero img,.bk-ph img{display:block;width:100%;height:100%;transform-origin:50% 0;will-change:transform}
+.bk-ph img{transform-origin:50% 50%}
+.bk-fg{position:absolute;left:0;top:calc(var(--u)*56);width:calc(var(--u)*721);height:calc(var(--u)*163);display:block;pointer-events:none}
+.bk-bell{position:absolute;left:calc(var(--u)*605);top:calc(var(--u)*27);width:calc(var(--u)*20);height:calc(var(--u)*20);background:#fff}
+.bk-bell img{display:block;width:100%;height:100%;transform-origin:50% 22%}
+/* picked slot: a tint multiplied over the real chip, so its own text and border stay as they are */
+.bk-slot{fill:#ffe3cf;stroke:#ff914d;stroke-width:1;mix-blend-mode:multiply;opacity:0}
+.bk-star-sheen,.bk-btn-sheen{mix-blend-mode:screen}
+.bk-heart,.bk-badge,.bk-tap{transform-box:fill-box;transform-origin:center}
+@media (prefers-reduced-motion:reduce){.bk-win{transition:none}.case:hover .bk-win{transform:none}}
 @media (prefers-reduced-motion:reduce){
-  .wave i,.rod i.go,.playhead,.switch i,.a11y-title,.edge::after,.node .meter::after{animation:none}
+  .wave i,.rod i.go,.playhead,.switch i,.a11y-title{animation:none}
 }
 
 /* ---------- process ---------- */
