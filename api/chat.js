@@ -19,7 +19,7 @@ const ALLOWED_ORIGINS = [
 ];
 
 const FALLBACK_KNOWLEDGE =
-  "Adnan Afana is an AI Product Builder & Consultant in Ontario, Canada, working across product design, AI-powered development and business consulting. Contact: adnanafana0@gmail.com.";
+  "Adnan Afana is an AI Product Builder & Consultant based in Kingston, Ontario, Canada (open to relocating to another city for work), working across product design, AI-powered development and business consulting. Contact: adnanafana0@gmail.com.";
 
 let knowledgeCache = null, knowledgeLoaded = false;
 function knowledge() {
