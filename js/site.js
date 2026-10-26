@@ -1257,6 +1257,11 @@
   });
   gsap.from('.facts li', { y: 28, opacity: .2, duration: 1, ease: 'expo.out', stagger: .1, scrollTrigger: { trigger: '.facts', start: 'top 85%' } });
 
+  /* ---------- testimonials: cards rise in, quote mark draws in ---------- */
+  if ($('.tst-list')) {
+    gsap.from('.tst', { y: 40, opacity: .15, duration: 1.1, ease: 'expo.out', stagger: .1, scrollTrigger: { trigger: '.tst-list', start: 'top 85%' } });
+  }
+
   /* ---------- redline measurements draw in ---------- */
   $$('[data-rl]').forEach(el => gsap.from(el, { scaleY: 0, duration: 1.1, ease: 'expo.inOut', scrollTrigger: { trigger: el, start: 'top 88%' } }));
 
