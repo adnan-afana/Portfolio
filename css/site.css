@@ -193,6 +193,67 @@ section{position:relative}
 .facts .fact-k{color:var(--redline)}
 .facts strong{font-family:var(--f-display);font-weight:700;font-stretch:110%;font-size:clamp(22px,2.2vw,32px);letter-spacing:-.02em}
 
+/* ---------- testimonials: same 3/9 grid as About, one quote at a time ---------- */
+.tst-sec{padding-block:clamp(72px,8vw,128px) 0}
+.tst-side{display:flex;flex-direction:column;align-items:flex-start;gap:22px;min-width:0}
+.tst-side .eyebrow{margin:0;padding-top:.15em}
+.tst-stage{grid-column:2;display:grid;max-width:46em}
+/* link out to the full review history, under the label */
+.tst-more{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding-left:28px}
+.tst-more-t{font-family:var(--f-display);font-weight:600;font-stretch:105%;font-size:16px;letter-spacing:-.01em;
+  background:linear-gradient(currentColor,currentColor) 0 100%/100% 1px no-repeat;padding-bottom:3px;transition:background-size .5s var(--ease)}
+.tst-more-a{display:inline-block;color:var(--redline);transition:transform .45s var(--ease)}
+.tst-more:hover .tst-more-t{background-size:0 1px;background-position:100% 100%}
+.tst-more:hover .tst-more-a{transform:translate(2px,-2px)}
+.tst-more-s{font-size:11px;color:var(--muted)}
+.tst-stage:focus-visible{outline-offset:12px}
+.tst-stage{cursor:pointer;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
+/* keyboard hint, shown only while the quote has keyboard focus */
+.tst-hint{color:var(--muted);font-size:11px;padding-left:28px;margin-top:-6px;opacity:0;transition:opacity .3s var(--ease)}
+.tst-sec:has(.tst-stage:focus-visible) .tst-hint{opacity:1}
+.tst{grid-area:1/1;margin:0;display:flex;flex-direction:column;gap:clamp(24px,2.6vw,40px);
+  opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility 0s .5s}
+.tst.is-on{opacity:1;visibility:visible;transition:opacity .5s var(--ease),visibility 0s}
+/* the quote takes the free height, so the name always sits on the same line */
+.tst-q{margin:0;position:relative;flex:1}
+.tst-q p{margin:0;font-family:var(--f-display);font-weight:500;font-size:clamp(20px,2.05vw,33px);line-height:1.22;letter-spacing:-.02em;text-wrap:pretty;
+  text-indent:-.42em}
+.tst-q p::before{content:"\201C";color:var(--redline)}
+.tst-q p::after{content:"\201D";color:var(--redline)}
+.tst-q .w{text-indent:0;will-change:transform,opacity,filter}
+.tst-by{display:flex;align-items:center;gap:12px}
+.tst-by > span:last-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.tst-by b{font-family:var(--f-display);font-weight:700;font-stretch:108%;font-size:17px;letter-spacing:-.01em}
+.tst-by .mono{font-size:11px;color:var(--muted)}
+.tst-av{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:50%;overflow:hidden;
+  background:var(--panel);color:var(--ink);font-family:var(--f-mono);font-size:11px;letter-spacing:.04em}
+.tst-av img{width:100%;height:100%;object-fit:cover}
+/* timer: a thin ring around the photo fills while the quote is shown (added by site.js) */
+.tst-avw{position:relative;flex:none;display:grid;place-items:center;width:52px;height:52px}
+.tst-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);pointer-events:none;overflow:visible}
+.tst-ring circle{fill:none;stroke-width:1.5}
+.tst-ring .rt{stroke:var(--line)}
+.tst-ring .rf{stroke:var(--redline);stroke-dasharray:100 100;stroke-dashoffset:100;stroke-linecap:round}
+@media (max-width:1024px){
+  .tst-grid{grid-template-columns:minmax(0,1fr)}
+  .tst-stage{grid-column:1}
+  .tst-side{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:16px 24px;flex-wrap:wrap}
+  .tst-side .eyebrow{padding-top:0}
+  .tst-more{padding-left:0}
+  .tst-hint{display:none}
+}
+@media (min-width:701px) and (max-width:1024px){
+  /* match the About statement's centred column (width synced from #statement in site.js) */
+  .tst-grid{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
+  .tst-side,.tst-stage{grid-column:2;width:var(--stmt-w,min(100%,560px))}
+}
+@media (max-width:700px){
+  .tst-grid{grid-template-columns:minmax(0,1fr)}
+  .tst-side,.tst-stage{grid-column:1}
+  .tst-side{flex-direction:column}
+}
+@media (prefers-reduced-motion:reduce){.tst,.tst.is-on{transition:none}}
+
 /* ---------- work (pinned horizontal) ---------- */
 .work{padding-block:clamp(72px,9vw,120px) clamp(48px,6vw,80px);overflow:hidden}
 .work-inner{display:flex;flex-direction:column;justify-content:center;gap:clamp(28px,3.5vw,48px);min-height:100%}

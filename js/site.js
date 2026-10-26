@@ -337,6 +337,85 @@
   })();
   /* ---------- Work / Activities toggle ---------- */
   const toggle = $('#viewToggle'), tInd = $('#toggleInd'), tabs = $$('[data-view]', toggle);
+  /* ---------- testimonials carousel ---------- */
+  function tstReveal(fig, extra = {}) {
+    if (!fig || !window.gsap || reduce) return;
+    const p = $('.tst-q p', fig);
+    if (!p._words) p._words = splitWords(p);
+    gsap.fromTo(p._words, { opacity: .15, filter: 'blur(8px)', yPercent: 30 },
+      { opacity: 1, filter: 'blur(0px)', yPercent: 0, duration: 1, ease: 'expo.out', stagger: .025, overwrite: true, ...extra });
+    gsap.fromTo($('.tst-by', fig), { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .9, delay: .25, ease: 'expo.out', overwrite: true, ...extra });
+  }
+  (() => {
+    const sec = $('#testimonials'); if (!sec) return;
+    const slides = $$('.tst', sec), now = $('#tstNow', sec), all = $('#tstAll', sec), stage = $('#tstStage', sec);
+    const pad = n => String(n).padStart(2, '0');
+    // time on screen scales with the quote: ~3.3 words/sec reading plus a beat to look at the name
+    const dur = s => Math.max(6500, Math.min(16000, 3000 + $('.tst-q', s).textContent.trim().split(/\s+/).length * 300));
+    const ns = 'http://www.w3.org/2000/svg';
+    // wrap each photo in a ring; the ring of the quote on screen fills over its reading time
+    const rings = slides.map(s => {
+      const av = $('.tst-av', s); if (!av) return null;
+      const w = document.createElement('span'); w.className = 'tst-avw'; w.setAttribute('aria-hidden', 'true');
+      av.replaceWith(w); w.appendChild(av);
+      const svg = document.createElementNS(ns, 'svg'); svg.setAttribute('class', 'tst-ring'); svg.setAttribute('viewBox', '0 0 52 52');
+      svg.innerHTML = '<circle class="rt" cx="26" cy="26" r="25"/><circle class="rf" cx="26" cy="26" r="25" pathLength="100"/>';
+      w.appendChild(svg);
+      return $('.rf', svg);
+    });
+    let i = 0, inView = false, hold = false, anim = null;
+    if (all) all.textContent = pad(slides.length);
+    function run() {
+      anim?.cancel(); anim = null;
+      const r = rings[i]; if (!r || slides.length < 2 || !r.animate) return;
+      const ms = dur(slides[i]);
+      const a = anim = r.animate([{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration: ms, easing: 'linear', fill: 'forwards' });
+      if (hold || !inView) a.pause();
+      a.finished.then(() => { if (anim === a && a.currentTime >= ms - 20) { set(i + 1); tstReveal(slides[i]); } }).catch(() => {});
+    }
+    function set(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, k) => { const on = k === i; s.hidden = false; s.classList.toggle('is-on', on); s.inert = !on; s.setAttribute('aria-hidden', String(!on)); });
+      if (now) now.textContent = pad(i + 1);
+      run();
+    }
+    const sync = () => { const stop = hold || !inView; sec.classList.toggle('is-paused', stop); if (anim) stop ? anim.pause() : anim.play(); };
+    set(0);
+    const stmt = $('#statement');
+    if (stmt && window.ResizeObserver) new ResizeObserver(() => sec.style.setProperty('--stmt-w', stmt.getBoundingClientRect().width + 'px')).observe(stmt);
+    if (slides.length < 2) { $('.tst-count', sec)?.setAttribute('hidden', ''); return; }
+    // the timer keeps running under the mouse; it only holds while a keyboard user has the quote focused
+    stage.addEventListener('focus', () => { hold = stage.matches(':focus-visible'); sync(); });
+    stage.addEventListener('blur', () => { hold = false; sync(); });
+    // browse without buttons: the custom cursor reads Previous / Next over each half of the quote,
+    // a click (or tap) on that half moves, a swipe moves on touch, and the arrow keys work when focused
+    const go = d => { set(i + d); tstReveal(slides[i]); };
+    const half = x => { const r = stage.getBoundingClientRect(); return x < r.left + r.width / 2 ? -1 : 1; };
+    stage.dataset.cursor = 'Next';
+    stage.addEventListener('mousemove', e => {
+      const label = half(e.clientX) < 0 ? 'Previous' : 'Next';
+      if (stage.dataset.cursor !== label) { stage.dataset.cursor = label; const cl = $('#cursorLabel'); if (cl) cl.textContent = label; }
+    });
+    let sx = null, sy = 0, swiped = false;
+    stage.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') { sx = e.clientX; sy = e.clientY; } swiped = false; });
+    stage.addEventListener('pointerup', e => {
+      if (sx === null) return;
+      const dx = e.clientX - sx, dy = e.clientY - sy; sx = null;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) { swiped = true; go(dx < 0 ? 1 : -1); }
+    });
+    stage.addEventListener('click', e => {
+      if (swiped) { swiped = false; return; }
+      if (getSelection && String(getSelection()).length) return;   // let people select a quote to copy it
+      go(half(e.clientX));
+    });
+    stage.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(1); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); go(-1); }
+    });
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }, { threshold: .4 }).observe(sec);
+    sync();
+  })();
+
   const views = { work: $('#workView'), activities: $('#activities') };
   let view = 'work';
   const placeInd = () => { const b = $('.is-on', toggle); tInd.style.width = b.offsetWidth + 'px'; tInd.style.transform = `translateX(${b.offsetLeft}px)`; };
@@ -1256,6 +1335,12 @@
     scrollTrigger: { trigger: '#statement', start: 'top 82%', end: 'bottom 55%', scrub: .8 }
   });
   gsap.from('.facts li', { y: 28, opacity: .2, duration: 1, ease: 'expo.out', stagger: .1, scrollTrigger: { trigger: '.facts', start: 'top 85%' } });
+
+  /* ---------- testimonials: first quote reveals like the statement ---------- */
+  if ($('#tstStage')) {
+    gsap.from('#testimonials .tst-side > *', { y: 18, opacity: 0, duration: 1, ease: 'expo.out', stagger: .08, scrollTrigger: { trigger: '#testimonials', start: 'top 80%' } });
+    tstReveal($('#testimonials .tst.is-on'), { scrollTrigger: { trigger: '#tstStage', start: 'top 82%' } });
+  }
 
   /* ---------- redline measurements draw in ---------- */
   $$('[data-rl]').forEach(el => gsap.from(el, { scaleY: 0, duration: 1.1, ease: 'expo.inOut', scrollTrigger: { trigger: el, start: 'top 88%' } }));
