@@ -51,7 +51,7 @@
 ## About Adnan
 
 Q: Who is Adnan Afana? / Tell me about Adnan.
-A: Adnan is a product designer, AI-powered product builder, entrepreneur, and business consultant based in Ontario, Canada. He combines design, technology, and business thinking to solve complex problems and build practical solutions.
+A: Adnan is a product designer, AI-powered product builder, entrepreneur, and business consultant based in Kingston, Ontario, Canada. He combines design, technology, and business thinking to solve complex problems and build practical solutions.
 
 Q: What does Adnan do?
 A: Adnan researches, designs, and builds digital products. He also advises businesses, develops AI-powered experiences, and helps organizations improve their processes and customer experiences.
@@ -63,10 +63,10 @@ Q: How many years of experience does Adnan have?
 A: Adnan has over five years of professional experience in digital product design, technology consulting, SaaS products, and working with international clients.
 
 Q: Where is Adnan located?
-A: Adnan is based in Ontario, Canada, and has extensive experience collaborating remotely with international teams.
+A: Adnan is based in Kingston, Ontario, Canada. He is flexible and open to moving or relocating to another city for work, and he also has extensive experience collaborating remotely with international teams.
 
-Q: Which city is Adnan in? / Can Adnan work on-site or relocate?
-A: Adnan works remotely with clients across Ontario, and he is ready to relocate or move to another city for the right opportunity.
+Q: Which city is Adnan in? / Where is he based? / Can Adnan work on-site or relocate?
+A: Adnan is based in Kingston, Ontario. He is flexible to move or relocate to another city for work, and he also works remotely with clients across Ontario and internationally.
 
 Q: What makes Adnan different from other designers?
 A: Adnan goes beyond designing interfaces. He understands business challenges, conducts research, develops solutions, and uses AI-assisted development to build functional products.
@@ -526,7 +526,7 @@ A: You can contact Adnan at **adnanafana0@gmail.com** with a brief description o
 # Quick facts
 
 - Name: Adnan Afana
-- Location: Ontario, Canada (Eastern time zone). Works remotely with clients across Ontario and is ready to relocate for the right opportunity.
+- Location: Based in Kingston, Ontario, Canada (Eastern time zone). Whenever anyone asks where he is based or located, say Kingston, Ontario, and mention that he is flexible to move or relocate to another city for work. Also works remotely with clients across Ontario and internationally.
 - LinkedIn: https://www.linkedin.com/in/uxadnanafana/
 - Contact: adnanafana0@gmail.com.
 - Experience: Founder & AI Product Builder at PrefPick; AI Consultant & Workshop Facilitator for the Kingston business community; Product Design Consultant for international clients; Product Designer at LeaseTeq; Freelance Product & UX/UI Designer on Upwork; Freelancing Coach & Mentor at Mercy Corps; earlier Product Designer at Yalla Cooperative, UX/UI Designer at Bitlab and UX/UI Designer at Afdal.

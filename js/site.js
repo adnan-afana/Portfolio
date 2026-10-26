@@ -8,7 +8,7 @@
   const hasGsap = !!(window.gsap && window.ScrollTrigger);
   if (hasGsap) gsap.registerPlugin(ScrollTrigger);
 
-  /* ---------- Toronto clock ---------- */
+  /* ---------- Kingston clock (Eastern time) ---------- */
   const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   const clock = () => { const t = fmt.format(new Date()); $$('[data-clock]').forEach(e => e.textContent = t); };
   clock(); setInterval(clock, 1000);
