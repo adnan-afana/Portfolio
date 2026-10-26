@@ -38,49 +38,20 @@
     setTimeout(() => label.textContent = orig, 1600);
   }));
 
-  /* ---------- ask-AI chat (uses the viewer's Claude via the sample capability) ---------- */
-  (async function chat() {
-    const box = $('#chat'); if (!box || !window.claude || !window.claude.use) return;
-    let sample = null;
-    try { sample = await window.claude.use('sample'); } catch (e) { sample = null; }
-    if (!sample) return;
+  /* ---------- ask-AI chat (streams from the /api/chat serverless function) ---------- */
+  (function chat() {
+    const box = $('#chat'); if (!box) return;
     box.hidden = false;
     const fab = $('#chatFab'), panel = $('#chatPanel'), log = $('#chatLog'), form = $('#chatForm'), input = $('#chatInput'),
       send = $('#chatSend'), sugg = $('#chatSugg'), closeBtn = $('#chatClose'), cur = $('#cursor');
     box.addEventListener('mouseenter', () => { if (cur) cur.style.opacity = '0'; });
     box.addEventListener('mouseleave', () => { if (cur) cur.style.opacity = ''; });
-    const PROFILE = [
-      'Name: Adnan Afana',
-      'Role: AI Product Builder & Consultant: product design, AI-powered development and business consulting.',
-      'Location: Ontario, Canada (Toronto time zone).',
-      'Summary: Adnan builds, customizes and evolves digital products, including enterprise systems, SaaS and AI-powered apps, from idea to launch and beyond.',
-      'Experience: about 5 years in product and UX design.',
-      '- Founder & AI Product Builder at PrefPick.',
-      '- AI Consultant & Workshop Facilitator for the Kingston business community.',
-      '- Product Design Consultant for international clients.',
-      '- Product Designer at LeaseTeq.',
-      '- Freelance Product & UX/UI Designer on Upwork.',
-      '- Freelancing Coach & Mentor at Mercy Corps.',
-      '- Earlier: Product Designer at Yalla Cooperative; UX/UI Designer at Bitlab; UX/UI Designer at Afdal.',
-      'Focus areas: AI product design, interaction design, motion systems, prototyping, design systems, product strategy. He works across business, design and technology, validating ideas through research and interviews. He turns bold ideas and tough challenges into real products, and guides strategy, design, development, launch and ongoing improvement.',
-      'Toolkit: Figma, GSAP, ScrollTrigger, Lenis, prototyping, AI content tools, design systems.',
-      'Selected work on the site: LeaseTeq (2026, multi-portal vehicle leasing platform for customers, dealers and operations); Shannon Trust: Turning Pages (2023, accessible literacy platform for prison learners); Abacus Mobile App (2023, mental math app for children); MonMedX (2022, healthcare SaaS for clinics); Magrabi Hospitals & Centers (2023, accessible hospital website); Boka (2022, beauty and wellness booking apps). Each card links to the full case study on adnanafana.com.',
-      'Availability: the site invites business owners and companies to get in touch about product design, AI development and consulting.',
-      'Contact: email adnanafana0@gmail.com.'
-    ].join('\n');
-    const RULES = "You are the assistant on Adnan Afana's portfolio website. Answer visitors' questions about Adnan using ONLY the profile below.\n" +
-      '- Reply in plain text, 1 to 3 short sentences, warm and professional, referring to Adnan in the third person.\n' +
-      "- If the profile does not cover the question, say it isn't listed on the site and suggest emailing Adnan at adnanafana0@gmail.com.\n" +
-      '- Never invent clients, dates, metrics, salaries or personal details.\n' +
-      '- If asked about something unrelated to Adnan, briefly say you can only answer questions about him.\n\nPROFILE\n' + PROFILE;
     const COPY = {
       rate_limited: 'Lots of questions right now. Please try again in a minute.',
-      session_expired: 'Please sign in to Claude again to keep chatting.',
-      refused: "I can't help with that one. Try asking about Adnan's work or experience.",
-      empty_completion: "I didn't get an answer for that. Try rephrasing your question.",
-      prompt_too_large: 'This conversation got long. Refresh the page to start a new one.'
+      bad_request: "I couldn't read that question. Try rephrasing it.",
+      empty: "I didn't get an answer for that. Try rephrasing your question."
     };
-    const OFF = ['not_granted', 'sampling_disabled', 'not_declared', 'capability_disabled', 'capability_removed'];
+    const OFF = ['not_configured', 'forbidden', 'method_not_allowed'];
     const turns = []; let busy = false, ctl = null, dead = false;
     const open = v => { panel.hidden = !v; fab.setAttribute('aria-expanded', String(v)); if (v) setTimeout(() => input.focus(), 50); };
     fab.addEventListener('click', () => open(panel.hidden));
@@ -88,6 +59,7 @@
     addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) open(false); });
     const add = (cls, text) => { const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; };
     const settle = (bubble, text) => { bubble.className = 'msg bot'; bubble.textContent = text; };
+    const fail = code => Object.assign(new Error(code), { code });
     async function ask(q) {
       q = String(q || '').trim(); if (!q || busy || dead) return;
       busy = true; send.textContent = 'Stop'; sugg.hidden = true;
@@ -95,23 +67,36 @@
       turns.push({ role: 'user', content: q });
       const bubble = add('bot thinking', 'Thinking…');
       ctl = new AbortController();
+      let text = '';
       try {
-        const { text } = await sample([{ role: 'user', content: RULES }, ...turns.slice(-10)], {
-          modelTier: 'quick', cache: false, signal: ctl.signal,
-          onText: ({ text }) => { settle(bubble, text); log.scrollTop = log.scrollHeight; }
+        const res = await fetch('/api/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: turns.slice(-10) }), signal: ctl.signal
         });
+        if (!res.ok || !res.body) {
+          let code = 'error'; try { code = (await res.json()).error || code; } catch (e) {}
+          throw fail(res.status === 429 ? 'rate_limited' : code);
+        }
+        const reader = res.body.getReader(), dec = new TextDecoder();
+        for (;;) {
+          const { value, done } = await reader.read(); if (done) break;
+          text += dec.decode(value, { stream: true });
+          settle(bubble, text); log.scrollTop = log.scrollHeight;
+        }
+        text = text.trim();
+        if (!text) throw fail('empty');
         settle(bubble, text);
         turns.push({ role: 'assistant', content: text });
       } catch (e) {
-        const code = e && e.code;
+        const code = e && (e.name === 'AbortError' ? 'cancelled' : e.code);
         if (code === 'cancelled') {
-          if (e.text) { settle(bubble, e.text); turns.push({ role: 'assistant', content: e.text }); } else { bubble.remove(); turns.pop(); }
+          if (text.trim()) { settle(bubble, text); turns.push({ role: 'assistant', content: text }); } else { bubble.remove(); turns.pop(); }
         } else if (OFF.includes(code)) {
           bubble.className = 'msg err';
-          bubble.textContent = "The AI chat isn't available in this view. You can still email Adnan at adnanafana0@gmail.com.";
+          bubble.textContent = "The AI chat isn't available right now. You can still email Adnan at adnanafana0@gmail.com.";
           dead = true; input.disabled = true; send.disabled = true; turns.pop();
-        } else if (e && e.text) {
-          settle(bubble, e.text); turns.push({ role: 'assistant', content: e.text });
+        } else if (text.trim()) {
+          settle(bubble, text); turns.push({ role: 'assistant', content: text });
           add('err', 'The answer was cut off. Try asking again.');
         } else {
           bubble.className = 'msg err'; bubble.textContent = COPY[code] || 'Something went wrong. Please try again.'; turns.pop();

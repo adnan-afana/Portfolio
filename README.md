@@ -13,6 +13,7 @@ Live: https://adnanafana.com
 
 ```
 index.html          page markup
+api/chat.js         Ask AI backend (Vercel function)
 css/site.css        styles
 js/site.js          interactions and animation
 assets/images/      project imagery
@@ -33,7 +34,15 @@ npx serve .
 - [Lenis](https://github.com/darkroomengineering/lenis) 1.1.13 smooth scroll
 - Google Fonts: Archivo, Instrument Sans, IBM Plex Mono, Source Sans 3
 
-The libraries load from CDNs. The "Ask AI about me" chat stays hidden on this static build until it has a backend.
+The libraries load from CDNs.
+
+## Ask AI about me
+
+The chat panel posts to `api/chat.js`, a Vercel serverless function that streams answers from Claude (Haiku by default). The profile and rules the assistant answers from live in that file, so edit them there.
+
+- Set `ANTHROPIC_API_KEY` in the Vercel project's environment variables (Production and Preview). Optional: `CHAT_MODEL` to change the model.
+- Guard rails: only the last 10 messages are sent, visitor messages are capped at 500 characters, answers at 400 tokens, requests from other sites are refused, and each IP gets 20 questions per 10 minutes.
+- To test the chat locally, run `vercel dev` instead of `npx serve .` (a plain static server has no `/api`).
 
 ## Updating In the field
 
