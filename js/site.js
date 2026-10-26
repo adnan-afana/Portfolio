@@ -51,7 +51,7 @@
     box.addEventListener('mouseleave', () => { if (cur) cur.style.opacity = ''; });
     const PROFILE = [
       'Name: Adnan Afana',
-      'Role: AI Product Designer. Also works across UX, UI and business consulting.',
+      'Role: AI Product Builder & Consultant: product design, AI-powered development and business consulting.',
       'Location: Ontario, Canada (Toronto time zone).',
       'Summary: Adnan builds, customizes and evolves digital products, including enterprise systems, SaaS and AI-powered apps, from idea to launch and beyond.',
       'Experience: about 5 years in product and UX design.',
@@ -65,7 +65,7 @@
       'Focus areas: AI product design, interaction design, motion systems, prototyping, design systems, product strategy. He works across business, design and technology, validating ideas through research and interviews. He turns bold ideas and tough challenges into real products, and guides strategy, design, development, launch and ongoing improvement.',
       'Toolkit: Figma, GSAP, ScrollTrigger, Lenis, prototyping, AI content tools, design systems.',
       'Selected work on the site: LeaseTeq (2026, multi-portal vehicle leasing platform for customers, dealers and operations); Shannon Trust: Turning Pages (2023, accessible literacy platform for prison learners); Abacus Mobile App (2023, mental math app for children); MonMedX (2022, healthcare SaaS for clinics); Magrabi Hospitals & Centers (2023, accessible hospital website); Boka (2022, beauty and wellness booking apps). Each card links to the full case study on adnanafana.com.',
-      'Availability: the site invites companies hiring a senior product designer to get in touch.',
+      'Availability: the site invites business owners and companies to get in touch about product design, AI development and consulting.',
       'Contact: email adnanafana0@gmail.com.'
     ].join('\n');
     const RULES = "You are the assistant on Adnan Afana's portfolio website. Answer visitors' questions about Adnan using ONLY the profile below.\n" +

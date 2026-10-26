@@ -609,8 +609,8 @@ section{position:relative}
 }
 @media (max-width:700px){
   .statement-text{font-size:min(26px,calc((100vw - var(--gl) - var(--gr)) / 16.4))}
-  .hero-eyebrow{justify-content:space-between;gap:6px 12px;container-type:inline-size}
-  .hero-eyebrow>span{font-size:min(12px,calc((100cqi - 12px) / 31.6))}
+  .hero-eyebrow{flex-direction:column;align-items:flex-start;gap:6px}
+  .hero-eyebrow>span{font-size:min(11px,calc((100vw - var(--gl) - var(--gr)) / 37));white-space:nowrap}
   :root{--ruler:0px}
   .ruler,.ruler-corner{display:none}
   .brand-name{display:none}
