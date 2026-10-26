@@ -4,7 +4,7 @@ Personal portfolio of Adnan Afana, AI Product Designer based in Kingston, Ontari
 
 A static, single-page site with scroll-driven motion: a loader, smooth scrolling, and a **Work / In the field** toggle with a curtain transition.
 
-- **Work** has case studies for LeaseTeq, Shannon Trust: Turning Pages, Abacus Mobile App, MonMedX, Magrabi Hospitals, Boka and a cold-room control system. Each project's preview is rebuilt as live HTML, SVG and CSS with its own animation.
+- **Work** has case studies for LeaseTeq, Shannon Trust: Turning Pages, Abacus Mobile App, MonMedX, Magrabi Hospitals, Booka and a cold-room control system. Each project's preview is rebuilt as live HTML, SVG and CSS with its own animation.
 - **In the field** covers workshops, talks, consulting, mentoring and community in Kingston: a photo gallery, an upcoming-event card, past workshops, consulting and mentoring, community organizations and a writing section.
 
 Live: https://adnanafana.com

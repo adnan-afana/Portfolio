@@ -32,7 +32,12 @@
     },
     {
       "source": "/project/boka",
-      "destination": "/#case/boka",
+      "destination": "/#case/booka",
+      "permanent": true
+    },
+    {
+      "source": "/project/booka",
+      "destination": "/#case/booka",
       "permanent": true
     },
     {

@@ -518,7 +518,7 @@ section{position:relative}
 @keyframes crAuto{0%{transform:scale(1);opacity:.75}100%{transform:scale(2.3);opacity:0}}
 .cr:not(.run) *{animation-play-state:paused}
 @media (prefers-reduced-motion:reduce){.cr-fan,.cr-coil,.cr-ping,.cr-auto{animation:none!important}.cr-coil,.cr-ping,.cr-auto,.cr-edge{opacity:0!important}.cr-win{transition:none}.case:hover .cr-win{transform:none}}
-/* Boka: booking flow with travel buffer */
+/* Booka: booking flow with travel buffer */
 .flow{display:flex;align-items:center}
 .node{width:15cqi;padding:1.8cqi;background:var(--card);display:flex;flex-direction:column;gap:1cqi;box-shadow:0 1cqi 3cqi color-mix(in srgb,var(--ink) 9%,transparent)}
 .node span{font-size:1.45cqi;color:var(--muted)}

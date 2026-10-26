@@ -1046,10 +1046,10 @@
         ]
       },
       {
-        slug: 'boka', title: 'Boka', sub: 'Customer and provider apps for a beauty and wellness booking marketplace.',
+        slug: 'booka', title: 'Booka', sub: 'Customer and provider apps for a beauty and wellness booking marketplace.',
         meta: [['Role', 'Product Designer'], ['Client', 'Bitlab'], ['Service', 'Beauty and wellness'], ['Year', '2022']],
         sections: [
-          { k: 'Overview', lead: 'Boka connects customers with beauty and wellness providers. I redesigned its customer and provider mobile apps.',
+          { k: 'Overview', lead: 'Booka connects customers with beauty and wellness providers. I redesigned its customer and provider mobile apps.',
             text: ['The work tackled time management, service add-ons and scheduling for freelance providers, refining the booking system and making appointment scheduling faster for everyone. I also worked with another designer on the customer desktop UI and gave usability feedback.'] },
           { k: 'Deliverables', chips: ['Product design', 'UX strategy', 'Brand integration', 'Interactive prototypes'] },
           { k: 'Research and requirements', text: ['I reviewed feedback from customers and providers, then met the CTO and the client to clarify requirements and pain points. The booking had to feel effortless for customers and efficient for providers managing their day.'],
@@ -1065,7 +1065,7 @@
           { k: 'Collaboration and handoff', text: ['I worked closely with the development team in Jira, documented every design asset and specification, ran the final handoff and supported implementation to protect the integrity of the design.'] },
           { k: 'Outcome', cls: 'cs-out', lead: 'Booking became faster and simpler for customers and more efficient for providers.',
             text: ['Optimised time slots, add-ons and travel time meant fewer scheduling conflicts, better use of providers’ time, fewer booking errors and higher customer satisfaction, and set the stage for future features and growth.'],
-            link: ['View Boka for Business on the App Store', 'https://apps.apple.com/us/app/boka-for-business/id1629895082'] },
+            link: ['View Booka for Business on the App Store', 'https://apps.apple.com/us/app/boka-for-business/id1629895082'] },
           { k: 'Takeaways', take: [['Efficiency is key', 'Balance simplicity with advanced functionality: cut friction while maximising efficiency.'], ['Scalability matters', 'The booking flow and UI had to adapt to new services and more providers.'], ['Collaboration drives success', 'Close contact with the client, project manager and developers kept requirements and priorities aligned.']] }
         ]
       },
@@ -1187,7 +1187,8 @@
     }
     const fromHash = () => {
       const m = location.hash.match(/^#case\/([\w-]+)/);
-      const i = m ? CASES.findIndex(c => c.slug === m[1]) : -1;
+      const slug = m && m[1] === 'boka' ? 'booka' : m && m[1]; // old Boka links still open Booka
+      const i = m ? CASES.findIndex(c => c.slug === slug) : -1;
       if (i >= 0) openCase(i); else closeCase(false);
     };
     addEventListener('hashchange', fromHash);
