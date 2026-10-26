@@ -852,6 +852,68 @@
     $$('.cr').forEach(window.crCtl);
   })();
 
+  /* ---------- Booka live UI: the salon photo drifts, a time slot is picked, the booking goes through and the bell rings ---------- */
+  (function booka() {
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SLOTS = [[497.5, 337.25], [540, 337.25], [582.5, 337.25]], BTN = [562, 402], HEART = [559.5, 74.6], BADGE = '643 32.8';
+    const vio = still || !window.gsap ? null : new IntersectionObserver(es => es.forEach(e => {
+      const c = e.target._c; if (!c) return;
+      c.vis = e.isIntersecting && e.intersectionRatio > .2;
+      if (c.vis) c.begin();
+      c.tl.forEach(t => t.paused(!c.vis));
+    }), { threshold: [0, .2] });
+    window.bkCtl = bk => {
+      if (bk._c) return bk._c;
+      const c = bk._c = { tl: [], vis: false, began: false };
+      const hero = $('.bk-hero img', bk), photos = $$('.bk-ph img', bk), bell = $('.bk-bell img', bk);
+      const slots = $$('.bk-slot', bk), press = $('.bk-press', bk), sheen = $('.bk-btn-sheen', bk), stars = $('.bk-star-sheen', bk);
+      const heart = $('.bk-heart', bk), badge = $('.bk-badge', bk), tap = $('.bk-tap', bk);
+      const add = t => { c.tl = c.tl.filter(x => x.progress() < 1 || x.repeat() < 0); c.tl.push(t); if (!c.vis) t.pause(); return t; };
+      /* a soft tap ripple, the only "cursor" on the page */
+      const tapAt = ([x, y], at, tl) => tl
+        .set(tap, { attr: { cx: x, cy: y }, scale: .4, opacity: .34, svgOrigin: x + ' ' + y }, at)
+        .to(tap, { scale: 2.3, opacity: 0, svgOrigin: x + ' ' + y, duration: .65, ease: 'power2.out' }, at);
+      c.begin = () => {
+        if (c.began) return; c.began = true;
+        /* 1. photos: a slow push-in and drift, each at its own pace */
+        add(gsap.fromTo(hero, { scale: 1, xPercent: 0 }, { scale: 1.05, xPercent: -1.2, duration: 14, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
+        photos.forEach((ph, i) => add(gsap.fromTo(ph, { scale: 1.02 }, { scale: 1.1, duration: 9 + i * 2.5, ease: 'sine.inOut', yoyo: true, repeat: -1, delay: i * 1.5 })));
+        /* 2. rating: a light glint runs across the stars now and then */
+        add(gsap.timeline({ repeat: -1, delay: 2.2, repeatDelay: 4.6 })
+          .fromTo(stars, { attr: { x: 64 }, opacity: 0 }, { attr: { x: 128 }, duration: 1.1, ease: 'power1.inOut' })
+          .to(stars, { opacity: .9, duration: .3, ease: 'sine.out' }, 0)
+          .to(stars, { opacity: 0, duration: .3, ease: 'sine.in' }, .8));
+        /* 3. booking: pick the next slot, press Book, the booking lands (cart badge, bell); every other round, save the salon */
+        let k = -1, round = 0;
+        const cycle = () => {
+          const prev = k; k = (k + 1) % SLOTS.length; round++;
+          const tl = gsap.timeline();
+          tapAt(SLOTS[k], 0, tl);
+          if (prev >= 0) tl.to(slots[prev], { opacity: 0, duration: .35, ease: 'sine.inOut' }, .05);
+          tl.to(slots[k], { opacity: 1, duration: .35, ease: 'sine.out' }, .08);
+          tapAt(BTN, 1.25, tl);
+          tl.to(press, { opacity: .14, duration: .12, ease: 'power1.out' }, 1.25)
+            .to(press, { opacity: 0, duration: .45, ease: 'sine.out' }, 1.4)
+            .fromTo(sheen, { attr: { x: 570 }, opacity: 0 }, { attr: { x: 800 }, duration: .9, ease: 'power2.inOut' }, 1.35)
+            .to(sheen, { opacity: .55, duration: .2 }, 1.35)
+            .to(sheen, { opacity: 0, duration: .3 }, 1.95)
+            .fromTo(badge, { scale: 1, opacity: .9, svgOrigin: BADGE }, { scale: 2.8, opacity: 0, svgOrigin: BADGE, duration: .9, ease: 'power2.out' }, 1.9)
+            .to(bell, { keyframes: { rotation: [0, 16, -13, 9, -6, 3, 0] }, duration: 1, ease: 'sine.inOut' }, 1.95);
+          if (round % 2) {
+            tapAt(HEART, 3, tl);
+            tl.fromTo(heart, { scale: .3, opacity: 0, svgOrigin: HEART.join(' ') }, { scale: 1, opacity: 1, svgOrigin: HEART.join(' '), duration: .5, ease: 'back.out(3)' }, 3.05);
+          } else tl.to(heart, { opacity: 0, duration: .5, ease: 'sine.inOut' }, 3.1);
+          add(tl);
+          add(gsap.delayedCall(5.6, cycle));
+        };
+        add(gsap.delayedCall(1, cycle));
+      };
+      if (vio) vio.observe(bk);
+      return c;
+    };
+    $$('.bk').forEach(window.bkCtl);
+  })();
+
   /* ---------- hero dot field ---------- */
   const heroState = { p: 0 };
   (function dotField() {
@@ -1228,6 +1290,7 @@
         v.querySelectorAll('.ab').forEach(a => { a._c = null; if (window.abCtl) { const c = abCtl(a); c.set(1); } });
         v.querySelectorAll('.mx').forEach(m => { m._c = null; if (window.mxCtl) mxCtl(m); });
         v.querySelectorAll('.cr').forEach(m => { m._c = null; m.classList.remove('run'); m.querySelectorAll('.cr-comp').forEach(g => g.classList.remove('on')); if (window.crCtl) crCtl(m); });
+        v.querySelectorAll('.bk').forEach(m => { m._c = null; m.querySelectorAll('[style]').forEach(el => el.removeAttribute('style')); m.querySelectorAll('.bk-heart,.bk-badge,.bk-tap').forEach(el => el.removeAttribute('transform')); if (window.bkCtl) bkCtl(m); });
         v.querySelectorAll('.mg').forEach(m => { m._c = null; m.querySelectorAll('[style]').forEach(el => el.removeAttribute('style')); m.querySelectorAll('.mg-card,.mg-ring,.mg-arc,.mg-halo,.mg-bar,.mg-hud').forEach(el => el.removeAttribute('transform')); if (window.mgCtl) mgCtl(m); });
       }
       countEl.textContent = String(i + 1).padStart(2, '0') + ' / ' + String(CASES.length).padStart(2, '0');
