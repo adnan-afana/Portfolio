@@ -114,7 +114,8 @@ module.exports = async function handler(req, res) {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify({ model: MODEL, max_tokens: MAX_TOKENS, system: systemPrompt(), messages, stream: true })
+      // the system prompt is the same for every visitor, so cache it (cheaper and faster after the first question)
+      body: JSON.stringify({ model: MODEL, max_tokens: MAX_TOKENS, system: [{ type: 'text', text: systemPrompt(), cache_control: { type: 'ephemeral' } }], messages, stream: true })
     });
   } catch (e) {
     return res.status(502).json({ error: 'upstream_unreachable' });
