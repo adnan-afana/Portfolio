@@ -195,15 +195,11 @@ section{position:relative}
 
 /* ---------- testimonials: same 3/9 grid as About, one quote at a time ---------- */
 .tst-sec{padding-block:clamp(72px,8vw,128px) 0}
-.tst-side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.tst-side{display:flex;flex-direction:column;align-items:flex-start;gap:22px;min-width:0}
 .tst-side .eyebrow{margin:0;padding-top:.15em}
-.tst-count{padding-left:28px;color:var(--muted);font-variant-numeric:tabular-nums}
-.tst-count b{font-weight:500;color:var(--ink)}
-.tst-side{grid-column:1;grid-row:1}
-.tst-stage{grid-column:2;grid-row:1;display:grid;max-width:46em}
-/* link out to the full review history; sits in the left column on the name's line */
-.tst-more{grid-column:1;grid-row:1;align-self:end;justify-self:start;display:flex;flex-direction:column;align-items:flex-start;gap:6px;
-  padding-left:28px;padding-bottom:4px}
+.tst-stage{grid-column:2;display:grid;max-width:46em}
+/* link out to the full review history, under the label */
+.tst-more{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding-left:28px}
 .tst-more-t{font-family:var(--f-display);font-weight:600;font-stretch:105%;font-size:16px;letter-spacing:-.01em;
   background:linear-gradient(currentColor,currentColor) 0 100%/100% 1px no-repeat;padding-bottom:3px;transition:background-size .5s var(--ease)}
 .tst-more-a{display:inline-block;color:var(--redline);transition:transform .45s var(--ease)}
@@ -213,7 +209,7 @@ section{position:relative}
 .tst-stage:focus-visible{outline-offset:12px}
 .tst-stage{cursor:pointer;touch-action:pan-y;-webkit-tap-highlight-color:transparent}
 /* keyboard hint, shown only while the quote has keyboard focus */
-.tst-hint{color:var(--muted);font-size:11px;padding-left:28px;opacity:0;transition:opacity .3s var(--ease)}
+.tst-hint{color:var(--muted);font-size:11px;padding-left:28px;margin-top:-6px;opacity:0;transition:opacity .3s var(--ease)}
 .tst-sec:has(.tst-stage:focus-visible) .tst-hint{opacity:1}
 .tst{grid-area:1/1;margin:0;display:flex;flex-direction:column;gap:clamp(24px,2.6vw,40px);
   opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility 0s .5s}
@@ -241,21 +237,20 @@ section{position:relative}
 @media (max-width:1024px){
   .tst-grid{grid-template-columns:minmax(0,1fr)}
   .tst-stage{grid-column:1}
-  .tst-side{flex-direction:row;align-items:center;justify-content:space-between}
+  .tst-side{flex-direction:row;align-items:flex-start;justify-content:space-between;gap:16px 24px;flex-wrap:wrap}
   .tst-side .eyebrow{padding-top:0}
-  .tst-count{padding-left:0}
+  .tst-more{padding-left:0}
   .tst-hint{display:none}
-  .tst-side{grid-row:1}.tst-stage{grid-row:2}
-  .tst-more{grid-row:3;padding-left:0;margin-top:8px}
 }
 @media (min-width:701px) and (max-width:1024px){
   /* match the About statement's centred column (width synced from #statement in site.js) */
   .tst-grid{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}
-  .tst-side,.tst-stage,.tst-more{grid-column:2;width:var(--stmt-w,min(100%,560px))}
+  .tst-side,.tst-stage{grid-column:2;width:var(--stmt-w,min(100%,560px))}
 }
 @media (max-width:700px){
   .tst-grid{grid-template-columns:minmax(0,1fr)}
-  .tst-side,.tst-stage,.tst-more{grid-column:1}
+  .tst-side,.tst-stage{grid-column:1}
+  .tst-side{flex-direction:column}
 }
 @media (prefers-reduced-motion:reduce){.tst,.tst.is-on{transition:none}}
 
