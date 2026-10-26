@@ -37,9 +37,9 @@ npx serve .
 
 The libraries load from CDNs.
 
-## Ask AI about me
+## Afana AI (Ask Afana AI)
 
-The chat panel posts to `api/chat.js`, a Vercel serverless function that streams answers from Claude (Haiku by default).
+The "Ask Afana AI" chat panel posts to `api/chat.js`, a Vercel serverless function that streams answers from Claude (Haiku by default).
 
 **To change what the assistant knows or how it answers, edit `chat-knowledge.md`** (plain language: rules, set answers, profile, case studies). Notes inside `<!-- -->` are ignored by the AI. Edit it on github.com and Vercel republishes automatically.
 
