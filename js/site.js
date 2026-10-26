@@ -348,31 +348,54 @@
   }
   (() => {
     const sec = $('#testimonials'); if (!sec) return;
-    const slides = $$('.tst', sec), now = $('#tstNow', sec), all = $('#tstAll', sec), stage = $('#tstStage', sec);
+    const slides = $$('.tst', sec), now = $('#tstNow', sec), all = $('#tstAll', sec), bars = $('#tstBars', sec);
     const pad = n => String(n).padStart(2, '0');
-    let i = 0, timer = null, paused = false, inView = false;
+    // time on screen scales with the quote: ~3.3 words/sec reading plus a beat to look at the name
+    const dur = s => Math.max(6500, Math.min(16000, 3000 + $('.tst-q', s).textContent.trim().split(/\s+/).length * 300));
+    let i = 0, inView = false, hold = false;
     if (all) all.textContent = pad(slides.length);
-    const set = n => {
+    const btns = slides.map((s, k) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'tst-bar';
+      b.setAttribute('aria-label', `Show testimonial ${k + 1} of ${slides.length}`);
+      b.innerHTML = '<i></i>';
+      b.addEventListener('click', () => { if (k !== i) { set(k); tstReveal(slides[i]); } });
+      bars && bars.appendChild(b);
+      return b;
+    });
+    const sync = () => { const stop = hold || !inView; sec.classList.toggle('is-paused', stop); if (anim) stop ? anim.pause() : anim.play(); };
+    function set(n) {
       i = (n + slides.length) % slides.length;
       slides.forEach((s, k) => { const on = k === i; s.hidden = false; s.classList.toggle('is-on', on); s.inert = !on; s.setAttribute('aria-hidden', String(!on)); });
+      btns.forEach((b, k) => {
+        b.classList.toggle('is-done', k < i); b.classList.remove('is-on');
+        b.setAttribute('aria-current', String(k === i));
+      });
+      btns[i]?.classList.add('is-on');
       if (now) now.textContent = pad(i + 1);
-    };
+      run();
+    }
+    // the active bar fills over the quote's reading time; when it is full, move on
+    let anim = null;
+    function run() {
+      anim?.cancel(); anim = null;
+      const b = btns[i]; if (!b || reduce || slides.length < 2 || !b.animate) return;
+      const ms = dur(slides[i]);
+      const a = anim = $('i', b).animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: ms, easing: 'linear', fill: 'forwards' });
+      if (hold || !inView) a.pause();
+      a.finished.then(() => { if (anim === a && a.currentTime >= ms - 20) { set(i + 1); tstReveal(slides[i]); } }).catch(() => {});
+    }
     set(0);
     const stmt = $('#statement');
     if (stmt && window.ResizeObserver) new ResizeObserver(() => sec.style.setProperty('--stmt-w', stmt.getBoundingClientRect().width + 'px')).observe(stmt);
     if (slides.length < 2) { $('.tst-ctl', sec)?.setAttribute('hidden', ''); return; }
-    const go = d => { set(i + d); tstReveal(slides[i]); };
-    const stop = () => { clearInterval(timer); timer = null; };
-    const start = () => { stop(); if (!reduce && !paused && inView) timer = setInterval(() => go(1), 7000); };
-    $$('.tst-btn', sec).forEach(b => b.addEventListener('click', () => { go(Number(b.dataset.dir)); start(); }));
-    sec.addEventListener('pointerenter', () => { paused = true; stop(); });
-    sec.addEventListener('pointerleave', () => { paused = false; start(); });
-    sec.addEventListener('focusin', () => { paused = true; stop(); });
-    sec.addEventListener('focusout', e => { if (!sec.contains(e.relatedTarget)) { paused = false; start(); } });
-    // auto-advance only while visible, and keep it quiet for screen readers
-    stage.setAttribute('aria-live', 'off');
-    $$('.tst-btn', sec).forEach(b => b.addEventListener('click', () => stage.setAttribute('aria-live', 'polite'), { once: true }));
-    new IntersectionObserver(([e]) => { inView = e.isIntersecting; inView ? start() : stop(); }, { threshold: .4 }).observe(sec);
+    if (reduce) { sec.classList.add('is-static'); return; }   // no auto-advance; the bars still switch quotes
+    sec.addEventListener('pointerenter', () => { hold = true; sync(); });
+    sec.addEventListener('pointerleave', () => { hold = false; sync(); });
+    sec.addEventListener('focusin', () => { hold = true; sync(); });
+    sec.addEventListener('focusout', e => { if (!sec.contains(e.relatedTarget)) { hold = false; sync(); } });
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }, { threshold: .4 }).observe(sec);
+    sync();
   })();
 
   const views = { work: $('#workView'), activities: $('#activities') };

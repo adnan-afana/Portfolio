@@ -197,17 +197,22 @@ section{position:relative}
 .tst-sec{padding-block:clamp(72px,8vw,128px) 0}
 .tst-side{display:flex;flex-direction:column;justify-content:space-between;gap:24px;min-width:0}
 .tst-side .eyebrow{margin:0;padding-top:.15em}
-.tst-ctl{display:flex;align-items:center;gap:8px}
-.tst-count{margin-right:auto;color:var(--muted);font-variant-numeric:tabular-nums}
+.tst-ctl{display:flex;align-items:center;gap:0}
+.tst-count{flex:none;margin-right:16px;color:var(--muted);font-variant-numeric:tabular-nums}
 .tst-count b{font-weight:500;color:var(--ink)}
-.tst-btn{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);font-family:var(--f-mono);
-  transition:background .35s var(--ease),color .35s var(--ease),border-color .35s var(--ease)}
-.tst-btn:hover,.tst-btn:focus-visible{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+/* timer: one short segment per quote; the current one fills for as long as the quote stays up */
+.tst-bars{display:flex;gap:6px;width:240px;max-width:100%}
+.tst-bar{flex:1;position:relative;height:24px;display:flex;align-items:center}
+.tst-bar::before,.tst-bar i{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:var(--line)}
+.tst-bar i{background:var(--redline);transform:scaleX(0);transform-origin:0 50%}
+.tst-bar.is-done i{transform:scaleX(1);background:var(--ink)}
+.tst-sec.is-static .tst-bar.is-on i{transform:scaleX(1)}
+.tst-bar:hover::before{background:var(--muted)}
 .tst-stage{grid-column:2;display:grid;max-width:46em}
 .tst{grid-area:1/1;margin:0;display:flex;flex-direction:column;gap:clamp(24px,2.6vw,40px);
   opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility 0s .5s}
 .tst.is-on{opacity:1;visibility:visible;transition:opacity .5s var(--ease),visibility 0s}
-.tst-q{margin:0;position:relative}
+.tst-q{margin:0;position:relative;flex:1}
 .tst-q p{margin:0;font-family:var(--f-display);font-weight:500;font-size:clamp(20px,2.05vw,33px);line-height:1.22;letter-spacing:-.02em;text-wrap:pretty;
   text-indent:-.42em}
 .tst-q p::before{content:"\201C";color:var(--redline)}
@@ -236,6 +241,7 @@ section{position:relative}
   .tst-grid{grid-template-columns:minmax(0,1fr)}
   .tst-side,.tst-stage{grid-column:1}
   .tst-count{display:none}
+  .tst-bars{width:120px}
 }
 @media (prefers-reduced-motion:reduce){.tst,.tst.is-on{transition:none}}
 
