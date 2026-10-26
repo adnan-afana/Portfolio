@@ -1021,7 +1021,7 @@
       cs.hidden = false; lock(true);
       requestAnimationFrame(() => requestAnimationFrame(() => cs.classList.add('open')));
       setTimeout(() => closeBtn.focus({ preventScroll: true }), wasOpen ? 0 : 450);
-      document.title = CASES[i].title + ' · Adnan Afana';
+      document.title = CASES[i].title + ' \u2666 Adnan Afana';
     }
     function closeCase(fromUi) {
       if (openIdx < 0) return;
