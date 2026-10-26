@@ -337,6 +337,44 @@
   })();
   /* ---------- Work / Activities toggle ---------- */
   const toggle = $('#viewToggle'), tInd = $('#toggleInd'), tabs = $$('[data-view]', toggle);
+  /* ---------- testimonials carousel ---------- */
+  function tstReveal(fig, extra = {}) {
+    if (!fig || !window.gsap || reduce) return;
+    const p = $('.tst-q p', fig);
+    if (!p._words) p._words = splitWords(p);
+    gsap.fromTo(p._words, { opacity: .15, filter: 'blur(8px)', yPercent: 30 },
+      { opacity: 1, filter: 'blur(0px)', yPercent: 0, duration: 1, ease: 'expo.out', stagger: .025, overwrite: true, ...extra });
+    gsap.fromTo($('.tst-by', fig), { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: .9, delay: .25, ease: 'expo.out', overwrite: true, ...extra });
+  }
+  (() => {
+    const sec = $('#testimonials'); if (!sec) return;
+    const slides = $$('.tst', sec), now = $('#tstNow', sec), all = $('#tstAll', sec), stage = $('#tstStage', sec);
+    const pad = n => String(n).padStart(2, '0');
+    let i = 0, timer = null, paused = false, inView = false;
+    if (all) all.textContent = pad(slides.length);
+    const set = n => {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, k) => { const on = k === i; s.hidden = false; s.classList.toggle('is-on', on); s.inert = !on; s.setAttribute('aria-hidden', String(!on)); });
+      if (now) now.textContent = pad(i + 1);
+    };
+    set(0);
+    const stmt = $('#statement');
+    if (stmt && window.ResizeObserver) new ResizeObserver(() => sec.style.setProperty('--stmt-w', stmt.getBoundingClientRect().width + 'px')).observe(stmt);
+    if (slides.length < 2) { $('.tst-ctl', sec)?.setAttribute('hidden', ''); return; }
+    const go = d => { set(i + d); tstReveal(slides[i]); };
+    const stop = () => { clearInterval(timer); timer = null; };
+    const start = () => { stop(); if (!reduce && !paused && inView) timer = setInterval(() => go(1), 7000); };
+    $$('.tst-btn', sec).forEach(b => b.addEventListener('click', () => { go(Number(b.dataset.dir)); start(); }));
+    sec.addEventListener('pointerenter', () => { paused = true; stop(); });
+    sec.addEventListener('pointerleave', () => { paused = false; start(); });
+    sec.addEventListener('focusin', () => { paused = true; stop(); });
+    sec.addEventListener('focusout', e => { if (!sec.contains(e.relatedTarget)) { paused = false; start(); } });
+    // auto-advance only while visible, and keep it quiet for screen readers
+    stage.setAttribute('aria-live', 'off');
+    $$('.tst-btn', sec).forEach(b => b.addEventListener('click', () => stage.setAttribute('aria-live', 'polite'), { once: true }));
+    new IntersectionObserver(([e]) => { inView = e.isIntersecting; inView ? start() : stop(); }, { threshold: .4 }).observe(sec);
+  })();
+
   const views = { work: $('#workView'), activities: $('#activities') };
   let view = 'work';
   const placeInd = () => { const b = $('.is-on', toggle); tInd.style.width = b.offsetWidth + 'px'; tInd.style.transform = `translateX(${b.offsetLeft}px)`; };
@@ -1257,9 +1295,10 @@
   });
   gsap.from('.facts li', { y: 28, opacity: .2, duration: 1, ease: 'expo.out', stagger: .1, scrollTrigger: { trigger: '.facts', start: 'top 85%' } });
 
-  /* ---------- testimonials: cards rise in, quote mark draws in ---------- */
-  if ($('.tst-list')) {
-    gsap.from('.tst', { y: 40, opacity: .15, duration: 1.1, ease: 'expo.out', stagger: .1, scrollTrigger: { trigger: '.tst-list', start: 'top 85%' } });
+  /* ---------- testimonials: first quote reveals like the statement ---------- */
+  if ($('#tstStage')) {
+    gsap.from('#testimonials .tst-side > *', { y: 18, opacity: 0, duration: 1, ease: 'expo.out', stagger: .08, scrollTrigger: { trigger: '#testimonials', start: 'top 80%' } });
+    tstReveal($('#testimonials .tst.is-on'), { scrollTrigger: { trigger: '#tstStage', start: 'top 82%' } });
   }
 
   /* ---------- redline measurements draw in ---------- */

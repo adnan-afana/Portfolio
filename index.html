@@ -136,35 +136,32 @@
 
   <div id="workView">
   <!-- Testimonials: replace each placeholder with a real client quote, name and role.
-       Add or remove <li class="tst"> items freely; the grid adapts. -->
-  <section class="sec wrap tst-sec" id="testimonials" aria-labelledby="tstTitle">
-    <div class="sec-head">
-      <h2 class="h2" id="tstTitle" data-words>Kind words</h2>
-      <p class="eyebrow mono">From clients &amp; collaborators</p>
+       Add or remove <figure class="tst"> items freely (keep is-on on the first, hidden on the rest);
+       the counter and arrows adapt. To use a photo, put an <img> inside .tst-av instead of the initials. -->
+  <section class="sec wrap tst-sec" id="testimonials" aria-roledescription="carousel" aria-label="What clients say">
+    <div class="statement tst-grid">
+      <div class="tst-side">
+        <p class="eyebrow mono">What clients say</p>
+        <div class="tst-ctl">
+          <span class="tst-count mono" aria-hidden="true"><b id="tstNow">01</b> / <span id="tstAll">03</span></span>
+          <button type="button" class="tst-btn" data-dir="-1" aria-label="Previous testimonial">←</button><button type="button" class="tst-btn" data-dir="1" aria-label="Next testimonial">→</button>
+        </div>
+      </div>
+      <div class="tst-stage" id="tstStage" aria-live="polite">
+        <figure class="tst is-on" id="tst1" role="group" aria-roledescription="slide" aria-label="1 of 3">
+          <blockquote class="tst-q"><p>Client quote goes here. One to three sentences, in their own words, about working with you and what changed for their business.</p></blockquote>
+          <figcaption class="tst-by"><span class="tst-av" aria-hidden="true">CN</span><span><b>Client name</b><span class="mono">Role · Company</span></span></figcaption>
+        </figure>
+        <figure class="tst" id="tst2" role="group" aria-roledescription="slide" aria-label="2 of 3" hidden>
+          <blockquote class="tst-q"><p>Client quote goes here. One to three sentences, in their own words, about working with you and what changed for their business.</p></blockquote>
+          <figcaption class="tst-by"><span class="tst-av" aria-hidden="true">CN</span><span><b>Client name</b><span class="mono">Role · Company</span></span></figcaption>
+        </figure>
+        <figure class="tst" id="tst3" role="group" aria-roledescription="slide" aria-label="3 of 3" hidden>
+          <blockquote class="tst-q"><p>Client quote goes here. One to three sentences, in their own words, about working with you and what changed for their business.</p></blockquote>
+          <figcaption class="tst-by"><span class="tst-av" aria-hidden="true">CN</span><span><b>Client name</b><span class="mono">Role · Company</span></span></figcaption>
+        </figure>
+      </div>
     </div>
-    <ul class="tst-list">
-      <li class="tst">
-        <figure>
-          <span class="tst-n mono" aria-hidden="true">01</span>
-          <blockquote class="tst-q"><p>Client quote goes here. One to three sentences, in their own words, about working with you and what changed for their business.</p></blockquote>
-          <figcaption class="tst-by"><span class="tst-av" aria-hidden="true">CN</span><span><b>Client name</b><span class="mono">Role · Company</span></span></figcaption>
-        </figure>
-      </li>
-      <li class="tst">
-        <figure>
-          <span class="tst-n mono" aria-hidden="true">02</span>
-          <blockquote class="tst-q"><p>Client quote goes here. One to three sentences, in their own words, about working with you and what changed for their business.</p></blockquote>
-          <figcaption class="tst-by"><span class="tst-av" aria-hidden="true">CN</span><span><b>Client name</b><span class="mono">Role · Company</span></span></figcaption>
-        </figure>
-      </li>
-      <li class="tst">
-        <figure>
-          <span class="tst-n mono" aria-hidden="true">03</span>
-          <blockquote class="tst-q"><p>Client quote goes here. One to three sentences, in their own words, about working with you and what changed for their business.</p></blockquote>
-          <figcaption class="tst-by"><span class="tst-av" aria-hidden="true">CN</span><span><b>Client name</b><span class="mono">Role · Company</span></span></figcaption>
-        </figure>
-      </li>
-    </ul>
   </section>
 
   <section class="sec wrap" id="about">
