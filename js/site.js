@@ -983,7 +983,7 @@
         ]
       },
       {
-        slug: 'monmedx', title: 'MonMedX', sub: 'Improvement sprints for a remote healthcare SaaS platform that now serves 250 clinics across Canada.',
+        slug: 'monmedx', title: 'MonMedX', sub: 'Improvement sprints for a remote healthcare SaaS platform that now serves 200+ clinics across Canada.',
         meta: [['Role', 'Product Designer'], ['Client', 'Bitlab'], ['Service', 'Healthcare SaaS'], ['Year', '2022']],
         sections: [
           { k: 'Overview', lead: 'MonMedX is a remote healthcare platform for clinic operations, patient management and medical workflows across many facilities.',
@@ -1002,7 +1002,7 @@
             { h: 'Collaboration and iteration', d: 'I worked in an agile team with developers, used Jira for tasks, progress and user stories, and joined daily stand-ups with the CTO on design progress and client requirements.' },
             { h: 'Implementation and handoff', d: 'Final UI assets went to the development team with every component documented in the design system for future scale. The improved platform then launched to more clinics and a wider range of healthcare providers.' }
           ] },
-          { k: 'Outcome', cls: 'cs-out', lead: 'The platform scaled to 250 clinics across Canada and a wide range of specialties.',
+          { k: 'Outcome', cls: 'cs-out', lead: 'The platform scaled to 200+ clinics across Canada and a wide range of specialties.',
             text: ['Consistent design and scalable components streamlined clinic management and improved the experience, which led to higher client satisfaction and better adoption. The updates met immediate needs and set the foundation for growth as more clinics joined.'],
             link: ['Visit monmedx.com', 'https://monmedx.com'] },
           { k: 'Takeaways', take: [['Scalability is crucial', 'Refining the design system and building adaptable components kept things consistent while the platform grew with the number of clinics.'], ['Collaboration is key', 'Regular contact with stakeholders, the CTO, developers and clients kept the project on track.'], ['Agility improves results', 'Working iteratively let the design evolve with real-time feedback.']] }
