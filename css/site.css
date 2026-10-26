@@ -208,7 +208,7 @@ section{position:relative}
   opacity:0;visibility:hidden;transition:opacity .5s var(--ease),visibility 0s .5s}
 .tst.is-on{opacity:1;visibility:visible;transition:opacity .5s var(--ease),visibility 0s}
 .tst-q{margin:0;position:relative}
-.tst-q p{margin:0;font-family:var(--f-display);font-weight:500;font-size:clamp(22px,2.4vw,38px);line-height:1.18;letter-spacing:-.02em;text-wrap:pretty;
+.tst-q p{margin:0;font-family:var(--f-display);font-weight:500;font-size:clamp(20px,2.05vw,33px);line-height:1.22;letter-spacing:-.02em;text-wrap:pretty;
   text-indent:-.42em}
 .tst-q p::before{content:"\201C";color:var(--redline)}
 .tst-q p::after{content:"\201D";color:var(--redline)}
