@@ -348,52 +348,47 @@
   }
   (() => {
     const sec = $('#testimonials'); if (!sec) return;
-    const slides = $$('.tst', sec), now = $('#tstNow', sec), all = $('#tstAll', sec), bars = $('#tstBars', sec);
+    const slides = $$('.tst', sec), now = $('#tstNow', sec), all = $('#tstAll', sec), stage = $('#tstStage', sec);
     const pad = n => String(n).padStart(2, '0');
     // time on screen scales with the quote: ~3.3 words/sec reading plus a beat to look at the name
     const dur = s => Math.max(6500, Math.min(16000, 3000 + $('.tst-q', s).textContent.trim().split(/\s+/).length * 300));
-    let i = 0, inView = false, hold = false;
-    if (all) all.textContent = pad(slides.length);
-    const btns = slides.map((s, k) => {
-      const b = document.createElement('button');
-      b.type = 'button'; b.className = 'tst-bar';
-      b.setAttribute('aria-label', `Show testimonial ${k + 1} of ${slides.length}`);
-      b.innerHTML = '<i></i>';
-      b.addEventListener('click', () => { if (k !== i) { set(k); tstReveal(slides[i]); } });
-      bars && bars.appendChild(b);
-      return b;
+    const ns = 'http://www.w3.org/2000/svg';
+    // wrap each photo in a ring; the ring of the quote on screen fills over its reading time
+    const rings = slides.map(s => {
+      const av = $('.tst-av', s); if (!av) return null;
+      const w = document.createElement('span'); w.className = 'tst-avw'; w.setAttribute('aria-hidden', 'true');
+      av.replaceWith(w); w.appendChild(av);
+      const svg = document.createElementNS(ns, 'svg'); svg.setAttribute('class', 'tst-ring'); svg.setAttribute('viewBox', '0 0 52 52');
+      svg.innerHTML = '<circle class="rt" cx="26" cy="26" r="25"/><circle class="rf" cx="26" cy="26" r="25" pathLength="100"/>';
+      w.appendChild(svg);
+      return $('.rf', svg);
     });
-    const sync = () => { const stop = hold || !inView; sec.classList.toggle('is-paused', stop); if (anim) stop ? anim.pause() : anim.play(); };
-    function set(n) {
-      i = (n + slides.length) % slides.length;
-      slides.forEach((s, k) => { const on = k === i; s.hidden = false; s.classList.toggle('is-on', on); s.inert = !on; s.setAttribute('aria-hidden', String(!on)); });
-      btns.forEach((b, k) => {
-        b.classList.toggle('is-done', k < i); b.classList.remove('is-on');
-        b.setAttribute('aria-current', String(k === i));
-      });
-      btns[i]?.classList.add('is-on');
-      if (now) now.textContent = pad(i + 1);
-      run();
-    }
-    // the active bar fills over the quote's reading time; when it is full, move on
-    let anim = null;
+    let i = 0, inView = false, hold = false, anim = null;
+    if (all) all.textContent = pad(slides.length);
     function run() {
       anim?.cancel(); anim = null;
-      const b = btns[i]; if (!b || reduce || slides.length < 2 || !b.animate) return;
+      const r = rings[i]; if (!r || slides.length < 2 || !r.animate) return;
       const ms = dur(slides[i]);
-      const a = anim = $('i', b).animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], { duration: ms, easing: 'linear', fill: 'forwards' });
+      const a = anim = r.animate([{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration: ms, easing: 'linear', fill: 'forwards' });
       if (hold || !inView) a.pause();
       a.finished.then(() => { if (anim === a && a.currentTime >= ms - 20) { set(i + 1); tstReveal(slides[i]); } }).catch(() => {});
     }
+    function set(n) {
+      i = (n + slides.length) % slides.length;
+      slides.forEach((s, k) => { const on = k === i; s.hidden = false; s.classList.toggle('is-on', on); s.inert = !on; s.setAttribute('aria-hidden', String(!on)); });
+      if (now) now.textContent = pad(i + 1);
+      run();
+    }
+    const sync = () => { const stop = hold || !inView; sec.classList.toggle('is-paused', stop); if (anim) stop ? anim.pause() : anim.play(); };
     set(0);
     const stmt = $('#statement');
     if (stmt && window.ResizeObserver) new ResizeObserver(() => sec.style.setProperty('--stmt-w', stmt.getBoundingClientRect().width + 'px')).observe(stmt);
-    if (slides.length < 2) { $('.tst-ctl', sec)?.setAttribute('hidden', ''); return; }
-    if (reduce) { sec.classList.add('is-static'); return; }   // no auto-advance; the bars still switch quotes
+    if (slides.length < 2) { $('.tst-count', sec)?.setAttribute('hidden', ''); return; }
+    // pause while someone is reading it (pointer over it, or keyboard focus on the quote)
     sec.addEventListener('pointerenter', () => { hold = true; sync(); });
     sec.addEventListener('pointerleave', () => { hold = false; sync(); });
-    sec.addEventListener('focusin', () => { hold = true; sync(); });
-    sec.addEventListener('focusout', e => { if (!sec.contains(e.relatedTarget)) { hold = false; sync(); } });
+    stage.addEventListener('focus', () => { hold = true; sync(); });
+    stage.addEventListener('blur', () => { hold = false; sync(); });
     new IntersectionObserver(([e]) => { inView = e.isIntersecting; sync(); }, { threshold: .4 }).observe(sec);
     sync();
   })();
