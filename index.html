@@ -748,6 +748,25 @@
 </div>
 
 
+<aside class="cookie mono" id="cookie" aria-label="Analytics notice" hidden>
+  <p class="cookie-txt"><span class="cookie-k">Analytics</span>This site uses Microsoft Clarity and cookies to understand how visitors use it.</p>
+  <div class="cookie-acts"><button type="button" class="cookie-no" data-consent="denied">No thanks</button><button type="button" class="cookie-ok" data-consent="granted">OK</button></div>
+</aside>
+<script>
+(function(){
+  var KEY = 'aa-consent', box = document.getElementById('cookie'), saved = null;
+  function apply(v){ if (window.clarity) window.clarity('consentv2', { ad_Storage: 'denied', analytics_Storage: v }); }
+  try { saved = localStorage.getItem(KEY); } catch (e) {}
+  if (saved) { apply(saved); return; }
+  box.addEventListener('click', function(e){
+    var b = e.target.closest('[data-consent]'); if (!b) return;
+    var v = b.getAttribute('data-consent'); apply(v);
+    try { localStorage.setItem(KEY, v); } catch (e) {}
+    box.classList.remove('is-in'); setTimeout(function(){ box.hidden = true; }, 400);
+  });
+  window.addEventListener('load', function(){ setTimeout(function(){ box.hidden = false; requestAnimationFrame(function(){ box.classList.add('is-in'); }); }, 3200); });
+})();
+</script>
 <div class="chat" id="chat" hidden>
   <section class="chat-panel" id="chatPanel" role="dialog" aria-label="Afana AI, Adnan's AI assistant" hidden>
     <header class="chat-head"><div><p class="mono chat-kicker">Adnan's AI assistant</p><h2>Afana AI</h2></div><button type="button" class="chat-x" id="chatClose" aria-label="Close chat">×</button></header>

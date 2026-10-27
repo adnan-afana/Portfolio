@@ -1032,3 +1032,23 @@ section{position:relative}
   .grain,.pulse,.edge::after,.playhead,.mail-ico,.mail-ico path,.chat-dot,.chat-panel{animation:none}
   *{transition-duration:.01ms!important}
 }
+
+/* ---------- analytics notice: a small spec card, bottom-left, clear of the Afana AI button ---------- */
+.cookie{position:fixed;z-index:165;left:max(20px, env(safe-area-inset-left,0px));bottom:max(20px, env(safe-area-inset-bottom,0px));
+  width:min(340px, calc(100vw - 40px));padding:14px 16px;background:var(--card);color:var(--ink);border:1px solid var(--line);
+  border-left:2px solid var(--redline);box-shadow:0 14px 40px color-mix(in srgb,var(--ink) 14%,transparent);
+  opacity:0;transform:translateY(10px);transition:opacity .4s var(--ease),transform .5s var(--ease)}
+.cookie.is-in{opacity:1;transform:none}
+.cookie-txt{margin:0 0 12px;font-size:11px;line-height:1.6;letter-spacing:.02em;text-transform:none;color:var(--muted)}
+.cookie-k{display:block;margin-bottom:4px;font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--redline)}
+.cookie-acts{display:flex;justify-content:flex-end;gap:6px}
+.cookie-acts button{height:32px;padding:0 14px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;transition:background-color .3s,color .3s}
+.cookie-no{color:var(--muted)}
+.cookie-no:hover,.cookie-no:focus-visible{color:var(--ink)}
+.cookie-ok{background:var(--ink);color:var(--paper)}
+.cookie-ok:hover,.cookie-ok:focus-visible{background:var(--redline);color:var(--on-red)}
+@media (max-width:700px){
+  .cookie{left:max(16px, env(safe-area-inset-left,0px));right:max(16px, env(safe-area-inset-right,0px));width:auto;
+    bottom:calc(max(16px, env(safe-area-inset-bottom,0px)) + 58px)}
+}
+@media (prefers-reduced-motion:reduce){.cookie{transition:none;transform:none}}
