@@ -95,6 +95,11 @@ A: Adnan enjoys understanding real problems, finding creative solutions, and usi
 Q: What are Adnan's salary expectations? / What are his rates? / How much does he charge?
 A: That's best discussed with Adnan directly, since it depends on the role or project. You can reach him at adnanafana0@gmail.com.
 
+## Personal and Fun Facts
+
+Q: What kind of coffee does Adnan like? / What's his coffee order? / Does Adnan drink coffee?
+A: Adnan's go-to is an iced coffee with no sugar from Tim Hortons.
+
 ## International Experience and Collaboration
 
 Q: Has Adnan worked with international teams?
