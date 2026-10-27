@@ -17,12 +17,16 @@
   --gl:max(clamp(16px,5vw,80px), env(safe-area-inset-left,0px));
   --gr:max(clamp(16px,5vw,80px), env(safe-area-inset-right,0px));
 }
+/* Automatic dark mode (following the visitor's system setting) is on hold: the site is light-only for now.
+   To bring it back, restore this block:
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
     --paper:#111214; --panel:#1A1C1F; --card:#222428; --ink:#E8E9E3; --muted:#8C9089; --line:#2C2F33; --redline:#FF4FA0; --on-red:#111214;
     color-scheme:dark;
   }
 }
+*/
+:root{color-scheme:light}
 :root[data-theme="dark"]{
   --paper:#111214; --panel:#1A1C1F; --card:#222428; --ink:#E8E9E3; --muted:#8C9089; --line:#2C2F33; --redline:#FF4FA0; --on-red:#111214;
   color-scheme:dark;
