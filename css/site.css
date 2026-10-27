@@ -730,6 +730,8 @@ section{position:relative}
 .chat-form{display:flex;gap:8px;padding:12px 18px;border-top:1px solid var(--line)}
 .chat-form input{flex:1;min-width:0;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:0}
 .chat-form input:focus{outline:none;border-color:var(--redline)}
+/* phones zoom into any field under 16px when it is tapped, so the chat field is 16px on touch screens */
+@media (pointer:coarse),(max-width:760px){.chat-form input{font-size:16px}}
 .chat-send{padding:0 14px;background:var(--redline);color:var(--on-red);font-size:12px}
 .chat-send:hover,.chat-send:focus-visible{background:var(--ink);color:var(--paper)}
 .chat-send:disabled,.chat-form input:disabled{opacity:.5;cursor:not-allowed}
