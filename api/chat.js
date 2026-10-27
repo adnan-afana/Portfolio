@@ -2,9 +2,11 @@
 // Streams Claude's answer about Adnan back to the "Ask AI about me" panel.
 // What the assistant knows and how it behaves lives in /chat-knowledge.md (edit that, not this file).
 // Needs one environment variable on Vercel: ANTHROPIC_API_KEY. Optional: CHAT_MODEL.
+// Conversations are saved to Notion when NOTION_TOKEN is set (see lib/chat-log.js).
 
 const fs = require('fs');
 const path = require('path');
+const { logTurn } = require('../lib/chat-log');
 
 const MODEL = process.env.CHAT_MODEL || 'claude-haiku-5-5';
 const MAX_TOKENS = 1200;
@@ -104,6 +106,9 @@ module.exports = async function handler(req, res) {
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch (e) { body = null; } }
   const messages = clean(body && body.messages);
   if (!messages) return res.status(400).json({ error: 'bad_request' });
+  const chatId = typeof body.id === 'string' && /^[a-z0-9-]{8,64}$/i.test(body.id) ? body.id : null;
+  const count = Math.min(Math.max(parseInt(body.count, 10) || messages.length, 1), 999) + 1; // messages incl. this answer
+  const site = /(^|\.)adnanafana\.com$/i.test(String(req.headers.host || '').split(':')[0]) ? 'adnanafana.com' : 'Preview';
 
   let upstream;
   try {
@@ -134,7 +139,7 @@ module.exports = async function handler(req, res) {
   // Turn Anthropic's server-sent events into a plain text stream of the answer.
   const reader = upstream.body.getReader();
   const decoder = new TextDecoder();
-  let buf = '';
+  let buf = '', answer = '';
   try {
     for (;;) {
       const { value, done } = await reader.read();
@@ -146,12 +151,14 @@ module.exports = async function handler(req, res) {
         buf = buf.slice(nl + 1);
         if (!line.startsWith('data:')) continue;
         let evt; try { evt = JSON.parse(line.slice(5)); } catch (e) { continue; }
-        if (evt.type === 'content_block_delta' && evt.delta && evt.delta.type === 'text_delta') res.write(evt.delta.text);
+        if (evt.type === 'content_block_delta' && evt.delta && evt.delta.type === 'text_delta') { answer += evt.delta.text; res.write(evt.delta.text); }
         else if (evt.type === 'error') console.error('Anthropic stream error', evt.error);
       }
     }
   } catch (e) {
     console.error('Stream interrupted', e);
   }
+  // save this question and answer to Notion before closing (best effort, never blocks errors to the visitor)
+  await logTurn({ chatId, question: messages[messages.length - 1].content, answer, count, site });
   res.end();
 };

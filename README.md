@@ -47,6 +47,7 @@ Answers can include layout blocks the AI picks per question: list, cards, accord
 
 - Set `ANTHROPIC_API_KEY` in the Vercel project's environment variables (Production and Preview). Optional: `CHAT_MODEL` to change the model.
 - Guard rails: only the last 10 messages are sent, visitor messages are capped at 500 characters, answers at 400 tokens, requests from other sites are refused, and each IP gets 20 questions per 10 minutes.
+- Conversations are saved to the Notion database **Afana AI chats** (one row per visit, full transcript inside) by `lib/chat-log.js`. Needs `NOTION_TOKEN` in Vercel, from a Notion internal integration that has access to that database. Without it, nothing is saved and the chat works as normal.
 - To test the chat locally, run `vercel dev` instead of `npx serve .` (a plain static server has no `/api`).
 
 ## Updating In the field

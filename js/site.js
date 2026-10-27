@@ -53,6 +53,8 @@
     };
     const OFF = ['not_configured', 'forbidden', 'method_not_allowed'];
     const turns = []; let busy = false, ctl = null, dead = false;
+    // one ID per visit, so every message in this conversation is saved to the same row
+    const chatId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
     const open = v => { panel.hidden = !v; fab.setAttribute('aria-expanded', String(v)); if (v) setTimeout(() => input.focus(), 50); };
     fab.addEventListener('click', () => open(panel.hidden));
     closeBtn.addEventListener('click', () => { open(false); fab.focus(); });
@@ -232,7 +234,7 @@
       try {
         const res = await fetch('/api/chat', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: turns.slice(-10) }), signal: ctl.signal
+          body: JSON.stringify({ id: chatId, count: turns.length, messages: turns.slice(-10) }), signal: ctl.signal
         });
         if (!res.ok || !res.body) {
           let code = 'error'; try { code = (await res.json()).error || code; } catch (e) {}
