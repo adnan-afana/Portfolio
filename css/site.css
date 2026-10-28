@@ -746,6 +746,13 @@ section{position:relative}
 /* chat answer blocks: the AI picks these layouts, the site draws them */
 .chat-panel{transition:width .5s var(--ease),max-height .5s var(--ease)}
 .chat-panel.is-wide{width:min(540px, calc(100vw - 32px));max-height:min(720px, calc(100vh - 120px))}
+/* layout-shift (CLS) fix: the panel's layout box is pinned at a fixed point (just above the button, 12px gap) and
+   `translate` moves it up and left by its own size, so it looks and animates exactly as before. Growing taller while an
+   answer streams in, or wider for answer blocks, no longer moves its layout position, and transforms don't count as CLS.
+   Browsers without the `translate` property keep the original in-flow layout. */
+@supports (translate: 0) {
+  .chat-panel{position:absolute;left:100%;top:-12px;translate:-100% -100%}
+}
 .msg.rich{max-width:100%;width:100%;white-space:normal;display:flex;flex-direction:column;gap:12px;padding:14px 15px}
 .msg-prose{display:flex;flex-direction:column;gap:8px}
 .msg-p{margin:0}
