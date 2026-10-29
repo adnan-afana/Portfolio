@@ -49,6 +49,14 @@ Answers can include layout blocks the AI picks per question: list, cards, accord
 - Guard rails: only the last 10 messages are sent, visitor messages are capped at 500 characters, answers at 400 tokens, requests from other sites are refused, and each IP gets 20 questions per 10 minutes.
 - To test the chat locally, run `vercel dev` instead of `npx serve .` (a plain static server has no `/api`).
 
+## Workshop registration (/register/)
+
+- `register/index.html` (with `css/register.css` and `js/register.js`) is the shareable sign-up page for the upcoming workshop. The "Ask about a seat" button on the In the field card links to it.
+- Each sign-up is saved by `api/register.js` as a row in the Notion database **Workshop registrations** (name, business, topics, AI tools, status). No emails are sent to anyone.
+- Needs `NOTION_TOKEN` in Vercel (Production and Preview), from a Notion internal integration that is connected to the Workshop registrations database. Without it, the form shows "didn't go through" and nothing is saved.
+- After a successful sign-up the visitor sees a confirmation, an `.ics` invite downloads, and there's an Add to Google Calendar button. Event details (date, time, place, 1-hour length) live in the `EVENT` object at the top of `js/register.js`.
+- After the workshop date the form is replaced with a "This workshop has passed" note automatically.
+
 ## Updating In the field
 
 All content lives in `index.html`, inside `<div id="activities">`.

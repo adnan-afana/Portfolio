@@ -1,8 +1,8 @@
 /* Workshop registration page (/register/).
-   On submit: emails the registration to Adnan in the background (FormSubmit), shows a success
+   On submit: saves the registration to Adnan's Notion (via /api/register, no emails), shows a success
    message, and adds the workshop to the visitor's calendar (.ics download + Google Calendar link). */
 (() => {
-  const NOTIFY = 'https://formsubmit.co/ajax/adnanafana0@gmail.com';
+  const SAVE = '/api/register';
   const EVENT = {
     name: 'Let AI do the busy work',
     day: '2026-11-04',
@@ -46,11 +46,14 @@
     + '&location=' + encodeURIComponent(EVENT.location)
     + '&details=' + encodeURIComponent(EVENT.details);
 
-  // "Other" AI tool reveals a text field.
-  form.querySelectorAll('input[name=tool]').forEach(r => r.addEventListener('change', () => {
-    const on = r.value === 'other' && r.checked;
-    other.hidden = !on;
-    if (on) other.focus();
+  // AI tools: pick any number. "None yet" clears the others (and vice versa); "Other" reveals a text field.
+  const tools = [...form.querySelectorAll('input[name=tool]')];
+  tools.forEach(c => c.addEventListener('change', () => {
+    if (c.checked && c.value === 'None yet') tools.forEach(t => { if (t !== c) t.checked = false; });
+    if (c.checked && c.value !== 'None yet') tools.forEach(t => { if (t.value === 'None yet') t.checked = false; });
+    const wantsOther = tools.some(t => t.value === 'other' && t.checked);
+    other.hidden = !wantsOther;
+    if (c.value === 'other' && c.checked) other.focus();
   }));
 
   const setErr = (input, msg) => {
@@ -73,30 +76,26 @@
     if (bad) { bad.focus(); return; }
 
     const topics = [...form.querySelectorAll('input[name=topics]:checked')].map(c => c.value);
-    if (v('topic')) topics.push(v('topic'));
-    const picked = form.querySelector('input[name=tool]:checked');
-    const tool = !picked ? '' : picked.value === 'other' ? (v('toolOther') || 'Other') : picked.value;
+    const picked = tools.filter(t => t.checked).map(t => t.value);
 
     const label = send.querySelector('.btn-label'), was = label.textContent;
     send.disabled = true; label.textContent = 'Registering…';
     try {
-      const r = await fetch(NOTIFY, {
+      const r = await fetch(SAVE, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          _subject: `New registration: ${EVENT.name} · ${v('name')}, ${v('business')}`,
-          _template: 'table',
-          _captcha: 'false',
-          _honey: v('_honey'),
-          Workshop: `${EVENT.name} (${EVENT.when})`,
-          Name: v('name'),
-          'Business name': v('business'),
-          'Would like the workshop to cover': topics.length ? topics.join('; ') : 'Nothing specific',
-          'AI tool used every day': tool || 'Not specified'
+          workshop: EVENT.name,
+          name: v('name'),
+          business: v('business'),
+          topics,
+          otherTopics: v('topic'),
+          tools: picked.filter(t => t !== 'other'),
+          otherTool: picked.includes('other') ? (v('toolOther') || 'Other') : '',
+          website: v('website')
         })
       });
-      const data = await r.json().catch(() => ({}));
-      if (!r.ok || String(data.success) === 'false') throw new Error(data.message || 'not sent');
+      if (!r.ok) throw new Error('save failed ' + r.status);
     } catch (err) {
       send.disabled = false; label.textContent = was;
       fail.hidden = false;

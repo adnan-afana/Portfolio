@@ -4,7 +4,7 @@
 
 /* head */
 .rg-title{margin:0;font-family:var(--f-display);font-weight:800;font-stretch:112%;
-  font-size:min(7.6vw,104px);line-height:.95;letter-spacing:-.035em;white-space:nowrap}
+  font-size:min(6.5vw,96px);line-height:.95;letter-spacing:-.035em;white-space:nowrap}
 .rg-title em{font-style:normal;color:var(--redline)}
 .rg-sub{margin:clamp(18px,2vw,26px) 0 0;max-width:46ch;font-size:clamp(17px,1.4vw,20px);line-height:1.5;color:var(--muted)}
 .rg-sub b{font-weight:600;color:var(--ink)}
@@ -86,7 +86,7 @@ legend.rg-l+*{clear:both}
 }
 @media (max-width:640px){
   .rg-row{grid-template-columns:minmax(0,1fr)}
-  .rg-row .rg-f:first-child{padding-right:16px}
+  .rg-row .rg-f:first-child{padding-right:16px;border-bottom:0;padding-bottom:4px}
   .rg-row .rg-f+.rg-f{padding-left:16px}
   .rg-f,.rg-submit{padding:20px 16px}
   .rg-chips{gap:6px}
