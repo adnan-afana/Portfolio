@@ -1,16 +1,6 @@
 {
   "redirects": [
     {
-      "source": "/register",
-      "destination": "/let-ai-do-the-busy-work/",
-      "permanent": true
-    },
-    {
-      "source": "/let_ai_do_the_busy_work",
-      "destination": "/let-ai-do-the-busy-work/",
-      "permanent": true
-    },
-    {
       "source": "/chat-knowledge.md",
       "destination": "/",
       "permanent": false

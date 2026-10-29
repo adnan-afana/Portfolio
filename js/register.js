@@ -1,4 +1,4 @@
-/* Workshop registration page (/let-ai-do-the-busy-work/).
+/* Workshop registration page (/let-ai-do-the-busy-work).
    On submit: saves the registration to Adnan's Notion (via /api/register, no emails), shows a success
    message, and adds the workshop to the visitor's calendar (.ics download + Google Calendar link). */
 (() => {
@@ -10,7 +10,7 @@
     end: '20261104T180000Z',     // 1 hour
     when: 'Wednesday, November 4, 2026 at 12:00 PM',
     location: 'Fusion Meeting Room, Sonder Coworking, 945 Princess St, Kingston, ON',
-    details: 'A practical AI workshop for business owners, led by Adnan Afana and hosted by Sonder Coworking & Events. https://adnanafana.com/let-ai-do-the-busy-work/'
+    details: 'A practical AI workshop for business owners, led by Adnan Afana and hosted by Sonder Coworking & Events. https://adnanafana.com/let-ai-do-the-busy-work'
   };
 
   const open = document.getElementById('rgOpen'), closed = document.getElementById('rgClosed'),
@@ -33,7 +33,7 @@
     'SUMMARY:' + esc(EVENT.name),
     'LOCATION:' + esc(EVENT.location),
     'DESCRIPTION:' + esc(EVENT.details),
-    'URL:https://adnanafana.com/let-ai-do-the-busy-work/',
+    'URL:https://adnanafana.com/let-ai-do-the-busy-work',
     'BEGIN:VALARM', 'TRIGGER:-PT1H', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc(EVENT.name) + ' starts in 1 hour', 'END:VALARM',
     'END:VEVENT', 'END:VCALENDAR'
   ].join('\r\n');
