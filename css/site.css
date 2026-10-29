@@ -1063,3 +1063,36 @@ section{position:relative}
     bottom:calc(max(16px, env(safe-area-inset-bottom,0px)) + 58px)}
 }
 @media (prefers-reduced-motion:reduce){.cookie{transition:none;transform:none}}
+
+/* ---------- Ask about a seat form ---------- */
+.ask{position:fixed;inset:0;z-index:175;display:flex;align-items:center;justify-content:center;padding:16px;visibility:hidden;pointer-events:none}
+.ask.is-open{visibility:visible;pointer-events:auto}
+.ask-scrim{position:absolute;inset:0;background:color-mix(in srgb,var(--ink) 55%,transparent);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .45s var(--ease)}
+.ask.is-open .ask-scrim{opacity:1}
+.ask-panel{position:relative;width:min(560px,100%);max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;background:var(--card);color:var(--ink);border:1px solid var(--line);opacity:0;transform:translateY(24px);transition:opacity .45s var(--ease),transform .6s var(--ease);outline:none}
+.ask.is-open .ask-panel{opacity:1;transform:none}
+.ask-top{position:sticky;top:0;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;background:var(--ink);color:var(--paper)}
+.ask-kicker{margin:0;font-size:11px}
+.ask-x{display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid color-mix(in srgb,var(--paper) 35%,transparent);background:transparent;color:inherit;cursor:pointer}
+.ask-x:hover,.ask-x:focus-visible{background:var(--redline);border-color:var(--redline);color:var(--on-red);outline:none}
+.ask-body,.ask-done{padding:clamp(20px,4vw,32px);display:flex;flex-direction:column;gap:14px}
+.ask-title{margin:0;font-family:var(--f-display);font-weight:800;font-stretch:108%;font-size:clamp(30px,5vw,44px);line-height:.95;letter-spacing:-.03em}
+.ask-lead{margin:0;color:var(--muted);line-height:1.5}
+.ask-form{display:flex;flex-direction:column;gap:16px;margin-top:6px}
+.ask-f{display:flex;flex-direction:column;gap:8px}
+.ask-f .mono{font-size:11px;color:var(--muted)}
+.ask-f i{font-style:normal;color:var(--redline)}
+.ask-f input,.ask-f textarea{width:100%;box-sizing:border-box;font:inherit;font-family:var(--f-body);font-size:16px;padding:12px 14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:0;transition:border-color .25s}
+.ask-f textarea{resize:vertical;min-height:84px;line-height:1.45}
+.ask-f input::placeholder,.ask-f textarea::placeholder{color:color-mix(in srgb,var(--muted) 75%,transparent)}
+.ask-f input:focus,.ask-f textarea:focus{outline:none;border-color:var(--redline)}
+.ask-f.is-bad input{border-color:var(--redline)}
+.ask-err{font-style:normal;font-size:13px;color:var(--redline);min-height:0}
+.ask-err:empty{display:none}
+.ask-send,.ask-ok{width:100%;justify-content:center;margin-top:4px;cursor:pointer;font:inherit}
+.ask-note{margin:0;font-size:13px;color:var(--muted);line-height:1.45}
+.ask-note a{color:var(--ink)}
+.has-cursor .ask,.has-cursor .ask *{cursor:auto}
+.has-cursor .ask button,.has-cursor .ask a,.has-cursor .ask-scrim{cursor:pointer}
+.has-cursor .ask input,.has-cursor .ask textarea{cursor:text}
+@media (prefers-reduced-motion:reduce){.ask-scrim,.ask-panel{transition:none}}
