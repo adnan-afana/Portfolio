@@ -66,48 +66,84 @@
 </header>
 
 <main class="rg wrap">
-  <section class="rg-event" aria-labelledby="rgTitle">
-    <p class="ar-kicker mono"><span class="fld-live" aria-hidden="true"></span><span>Workshop</span><span aria-hidden="true">·</span><span>Sonder Coworking, Kingston</span></p>
-    <h1 class="rg-title" id="rgTitle">Let AI do the <em>busy work</em></h1>
-    <p class="ar-dek">A practical workshop for business owners.</p>
+  <header class="rg-head">
+    <p class="ar-kicker mono"><span class="fld-live" aria-hidden="true"></span><span>Workshop registration</span></p>
+    <h1 class="rg-title">Ask about a <em>seat</em></h1>
+    <p class="rg-sub">For <b>Let AI do the busy work</b>, a practical workshop for business owners. Tell me a little about you and I’ll shape the session around the room.</p>
+    <p class="rg-facts mono"><span>Wed, Nov 4</span><span>12:00 PM</span><span>Sonder Coworking, Kingston</span></p>
+  </header>
 
-    <div class="rg-date" aria-hidden="true"><b>04</b><span class="mono">Wed<br>Nov 2026</span></div>
-    <dl class="rg-meta">
-      <div><dt class="mono">When</dt><dd><time datetime="2026-11-04T12:00-05:00">Wednesday, November 4, 2026<br>12:00 PM (noon)</time></dd></div>
-      <div><dt class="mono">Where</dt><dd>Fusion Meeting Room, Sonder Coworking<br>945 Princess St, Kingston</dd></div>
-      <div><dt class="mono">Host</dt><dd>Sonder Coworking &amp; Events</dd></div>
-      <div><dt class="mono">Led by</dt><dd><a href="/">Adnan Afana</a></dd></div>
-    </dl>
-  </section>
+  <div class="rg-grid">
+    <section class="rg-card" aria-label="Seat request form">
+      <div id="rgOpen">
+        <form class="rg-form" id="askForm" novalidate>
+          <div class="rg-row">
+            <label class="rg-f"><span class="rg-l"><b class="mono">01</b>Your name <i aria-hidden="true">*</i></span><input name="name" autocomplete="name" required placeholder="Jane Smith"><em class="rg-err" aria-live="polite"></em></label>
+            <label class="rg-f"><span class="rg-l"><b class="mono">02</b>Business name <i aria-hidden="true">*</i></span><input name="business" autocomplete="organization" required placeholder="Smith’s Bakery"><em class="rg-err" aria-live="polite"></em></label>
+          </div>
 
-  <section class="rg-card" aria-labelledby="rgFormTitle">
-    <div class="rg-open" id="rgOpen">
-      <div class="rg-body" id="rgBody">
-        <h2 class="rg-h" id="rgFormTitle">Ask about a seat</h2>
-        <p class="rg-lead">Tell me a little about you and I’ll shape the session around the room.</p>
-        <form class="ask-form" id="askForm" novalidate>
-          <label class="ask-f"><span class="mono">Your name <i aria-hidden="true">*</i></span><input name="name" autocomplete="name" required placeholder="Jane Smith"><em class="ask-err" aria-live="polite"></em></label>
-          <label class="ask-f"><span class="mono">Business name <i aria-hidden="true">*</i></span><input name="business" autocomplete="organization" required placeholder="Smith’s Bakery"><em class="ask-err" aria-live="polite"></em></label>
-          <label class="ask-f"><span class="mono">Anything you’d like the workshop to cover?</span><textarea name="topic" rows="3" placeholder="e.g. answering customer emails, writing social posts, bookkeeping…"></textarea></label>
-          <label class="ask-f"><span class="mono">Which AI tool do you use every day?</span><input name="tool" list="askTools" placeholder="e.g. ChatGPT or Claude"></label>
-          <datalist id="askTools"><option value="ChatGPT"><option value="Claude"><option value="Gemini"><option value="Microsoft Copilot"><option value="Meta AI"><option value="Perplexity"><option value="None yet"></datalist>
-          <button type="submit" class="btn primary ask-send"><span class="btn-label">Send request</span><span class="arr" aria-hidden="true">→</span></button>
-          <p class="ask-note">This opens your email app with your answers filled in, ready to send.</p>
+          <fieldset class="rg-f">
+            <legend class="rg-l"><b class="mono">03</b>What would you like the workshop to cover?</legend>
+            <p class="rg-hint">Pick any that fit, or describe your own.</p>
+            <div class="rg-chips">
+              <label class="rg-chip"><input type="checkbox" name="topics" value="Answering customer emails"><span>Customer emails</span></label>
+              <label class="rg-chip"><input type="checkbox" name="topics" value="Social media posts"><span>Social media posts</span></label>
+              <label class="rg-chip"><input type="checkbox" name="topics" value="Marketing content"><span>Marketing content</span></label>
+              <label class="rg-chip"><input type="checkbox" name="topics" value="Bookkeeping and admin"><span>Bookkeeping &amp; admin</span></label>
+              <label class="rg-chip"><input type="checkbox" name="topics" value="Scheduling and bookings"><span>Scheduling &amp; bookings</span></label>
+              <label class="rg-chip"><input type="checkbox" name="topics" value="Customer service"><span>Customer service</span></label>
+            </div>
+            <textarea name="topic" rows="3" aria-label="Anything else you’d like covered" placeholder="Anything else? e.g. a task that eats up your week"></textarea>
+          </fieldset>
+
+          <fieldset class="rg-f">
+            <legend class="rg-l"><b class="mono">04</b>Which AI tool do you use every day?</legend>
+            <div class="rg-chips rg-chips--3">
+              <label class="rg-chip"><input type="radio" name="tool" value="ChatGPT"><span>ChatGPT</span></label>
+              <label class="rg-chip"><input type="radio" name="tool" value="Claude"><span>Claude</span></label>
+              <label class="rg-chip"><input type="radio" name="tool" value="Gemini"><span>Gemini</span></label>
+              <label class="rg-chip"><input type="radio" name="tool" value="Microsoft Copilot"><span>Copilot</span></label>
+              <label class="rg-chip"><input type="radio" name="tool" value="None yet"><span>None yet</span></label>
+              <label class="rg-chip"><input type="radio" name="tool" value="other"><span>Other</span></label>
+            </div>
+            <input name="toolOther" class="rg-other" aria-label="Which other AI tool" placeholder="Which one?" hidden>
+          </fieldset>
+
+          <div class="rg-submit">
+            <button type="submit" class="btn primary rg-send"><span class="btn-label">Send my request</span><span class="arr" aria-hidden="true">→</span></button>
+            <p class="rg-note">Opens your email app with your answers filled in, ready to send.</p>
+          </div>
         </form>
+
+        <div class="rg-done" id="rgDone" hidden>
+          <span class="rg-tick" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span>
+          <h2 class="rg-h" tabindex="-1">Almost there</h2>
+          <p class="rg-lead">Your email app should be open with your request ready. Hit send and I’ll reply to confirm your seat.</p>
+          <p class="rg-note">Didn’t open? Email <a href="mailto:adnanafana0@gmail.com?subject=Seat%20request%3A%20Let%20AI%20do%20the%20busy%20work%20(Nov%204)">adnanafana0@gmail.com</a> and mention the Nov 4 workshop.</p>
+          <button type="button" class="btn rg-send" id="rgAgain"><span class="btn-label">Edit my answers</span></button>
+        </div>
       </div>
-      <div class="rg-body" id="rgDone" hidden>
-        <h2 class="rg-h" tabindex="-1">Almost there</h2>
-        <p class="rg-lead">Your email app should be open with your request ready. Hit send and I’ll reply to confirm your seat.</p>
-        <p class="ask-note">Didn’t open? Email <a href="mailto:adnanafana0@gmail.com?subject=Seat%20request%3A%20Let%20AI%20do%20the%20busy%20work%20(Nov%204)">adnanafana0@gmail.com</a> and mention the Nov 4 workshop.</p>
-        <button type="button" class="btn ask-send" id="rgAgain"><span class="btn-label">Edit my answers</span></button>
+
+      <div class="rg-done" id="rgClosed" hidden>
+        <h2 class="rg-h">This workshop has passed</h2>
+        <p class="rg-lead">Thanks to everyone who came. Want a workshop for your team or community?</p>
+        <a class="btn primary rg-send" href="mailto:adnanafana0@gmail.com?subject=Workshop%20request"><span class="btn-label">Get in touch</span><span class="arr" aria-hidden="true">→</span></a>
       </div>
-    </div>
-    <div class="rg-body" id="rgClosed" hidden>
-      <h2 class="rg-h">This workshop has passed</h2>
-      <p class="rg-lead">Thanks to everyone who came. Want a workshop for your team or community?</p>
-      <a class="btn primary ask-send" href="mailto:adnanafana0@gmail.com?subject=Workshop%20request"><span class="btn-label">Get in touch</span><span class="arr" aria-hidden="true">→</span></a>
-    </div>
-  </section>
+    </section>
+
+    <aside class="rg-ticket" aria-label="Workshop details">
+      <div class="rg-ticket-top">
+        <div class="rg-date" aria-hidden="true"><b>04</b><span class="mono">Wed<br>Nov 2026</span></div>
+        <p class="rg-ticket-name">Let AI do the busy work</p>
+      </div>
+      <dl class="rg-meta">
+        <div><dt class="mono">When</dt><dd><time datetime="2026-11-04T12:00-05:00">Wednesday, November 4, 2026<br>12:00 PM (noon)</time></dd></div>
+        <div><dt class="mono">Where</dt><dd>Fusion Meeting Room, Sonder Coworking<br>945 Princess St, Kingston</dd></div>
+        <div><dt class="mono">Host</dt><dd>Sonder Coworking &amp; Events</dd></div>
+        <div><dt class="mono">Led by</dt><dd><a href="/">Adnan Afana</a></dd></div>
+      </dl>
+    </aside>
+  </div>
 </main>
 
 <footer class="foot mono wrap rg-foot">
