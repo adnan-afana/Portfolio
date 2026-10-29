@@ -620,7 +620,7 @@
           <div><dt class="mono">Where</dt><dd>Fusion Meeting Room, Sonder Coworking<br>945 Princess St, Kingston</dd></div>
           <div><dt class="mono">Host</dt><dd>Sonder Coworking &amp; Events</dd></div>
         </dl>
-        <a class="btn primary" href="#ask-seat" data-ask-seat aria-haspopup="dialog" aria-controls="askSeat"><span class="btn-label">Ask about a seat</span><span class="arr" aria-hidden="true">→</span></a>
+        <a class="btn primary" href="/register/"><span class="btn-label">Ask about a seat</span><span class="arr" aria-hidden="true">→</span></a>
       </div>
     </article>
     <p class="fld-empty" data-show-from="2026-11-05" hidden>Nothing on the calendar right now. Want a workshop for your team or community? <a href="mailto:adnanafana0@gmail.com?subject=Workshop%20request">Get in touch</a>.</p>
@@ -782,34 +782,6 @@
 </div>
 
 
-<div class="ask" id="askSeat" role="dialog" aria-modal="true" aria-labelledby="askTitle" aria-hidden="true" data-lenis-prevent>
-  <div class="ask-scrim" data-ask-close></div>
-  <div class="ask-panel" tabindex="-1">
-    <div class="ask-top">
-      <p class="mono ask-kicker">Workshop · Wed, Nov 4 · 12:00 PM</p>
-      <button type="button" class="ask-x" data-ask-close aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M1 1l12 12M13 1 1 13" stroke="currentColor" stroke-width="1.6"/></svg></button>
-    </div>
-    <div class="ask-body" id="askBody">
-      <h3 class="ask-title" id="askTitle">Ask about a seat</h3>
-      <p class="ask-lead">Let AI do the busy work, at Sonder Coworking, 945 Princess St, Kingston. Tell me a little about you and I’ll shape the session around the room.</p>
-      <form class="ask-form" id="askForm" novalidate>
-        <label class="ask-f"><span class="mono">Your name <i aria-hidden="true">*</i></span><input name="name" autocomplete="name" required placeholder="Jane Smith"><em class="ask-err" aria-live="polite"></em></label>
-        <label class="ask-f"><span class="mono">Business name <i aria-hidden="true">*</i></span><input name="business" autocomplete="organization" required placeholder="Smith’s Bakery"><em class="ask-err" aria-live="polite"></em></label>
-        <label class="ask-f"><span class="mono">Anything you’d like the workshop to cover?</span><textarea name="topic" rows="3" placeholder="e.g. answering customer emails, writing social posts, bookkeeping…"></textarea></label>
-        <label class="ask-f"><span class="mono">Which AI tool do you use every day?</span><input name="tool" list="askTools" placeholder="e.g. ChatGPT, Claude, or none yet"></label>
-        <datalist id="askTools"><option value="ChatGPT"><option value="Claude"><option value="Gemini"><option value="Microsoft Copilot"><option value="Meta AI"><option value="Perplexity"><option value="None yet"></datalist>
-        <button type="submit" class="btn primary ask-send"><span class="btn-label">Send request</span><span class="arr" aria-hidden="true">→</span></button>
-        <p class="ask-note">This opens your email app with your answers filled in, ready to send.</p>
-      </form>
-    </div>
-    <div class="ask-done" id="askDone" hidden>
-      <h3 class="ask-title">Almost there</h3>
-      <p class="ask-lead">Your email app should be open with your request ready. Hit send and I’ll reply to confirm your seat.</p>
-      <p class="ask-note">Didn’t open? Email <a href="mailto:adnanafana0@gmail.com">adnanafana0@gmail.com</a> and mention the Nov 4 workshop.</p>
-      <button type="button" class="btn ask-ok" data-ask-close><span class="btn-label">Done</span></button>
-    </div>
-  </div>
-</div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
