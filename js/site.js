@@ -563,7 +563,10 @@
     h.style.fontSize = Math.min(172, 100 * target / w100).toFixed(2) + 'px';
   }
   fitHero();
-  addEventListener('resize', fitHero);
+  /* the headline size depends only on the width; phones fire height-only resizes as the URL bar slides while scrolling,
+     and re-fitting then forced two full layouts of the hero for nothing */
+  let fitW = innerWidth;
+  addEventListener('resize', () => { if (innerWidth !== fitW) { fitW = innerWidth; fitHero(); } });
   /* ---------- work: measure everything in the section that isn't card image (padding, heading, titles, text, tags)
      so the image takes exactly the height that's left and the whole card fits one screen ---------- */
   const workMQ = matchMedia('(min-width: 900px) and (min-height: 560px)');
@@ -1362,15 +1365,28 @@
   })();
 
   /* ---------- no GSAP or reduced motion: page stays fully static ---------- */
-  if (!hasGsap || reduce) { const L = $('#loader'); if (L) L.remove(); landDeep(); return; }
+  if (!hasGsap || reduce) { const L = $('#loader'); if (L) L.remove(); window.__aaSettled = true; root.classList.remove('is-settling'); landDeep(); return; }
 
   /* ---------- hero prep + loader ---------- */
-  gsap.set('.hero .li', { yPercent: 112, rotate: 2.5 });
-  gsap.set('.hero [data-fade]', { autoAlpha: 0, y: 18 });
+  /* The hero is set up for its entrance one frame late. The loader is opaque and covers the whole screen, so nothing looks
+     different, but the browser gets to paint the headline and intro under it right away and records that as the page's main
+     content (LCP), instead of waiting for them to fade in after the loader. While the loader still covers everything, the page
+     is also kept out of paint (is-settling), so web fonts swapping in and the headline being fitted don't count as layout
+     shifts (CLS). */
+  let heroPrepped = false;
+  const prepHero = () => {
+    if (heroPrepped) return; heroPrepped = true;
+    gsap.set('.hero .li', { yPercent: 112, rotate: 2.5 });
+    gsap.set('.hero [data-fade]', { autoAlpha: 0, y: 18 });
+    if (!window.__aaSettled) root.classList.add('is-settling');   // (the inline script in <head> usually did this already)
+  };
+  const settle = () => { window.__aaSettled = true; root.classList.remove('is-settling'); };
+  if (window.__aaPainted) prepHero(); else requestAnimationFrame(() => requestAnimationFrame(prepHero));
   gsap.set('#nav', { autoAlpha: 0, y: -20 });
   if (lenis) lenis.stop();
 
   function heroIn() {
+    prepHero();
     if (lenis) lenis.start();
     landDeep();
     gsap.timeline()
@@ -1397,6 +1413,7 @@
       gsap.to(state, { v: 100, duration: .5, ease: 'power2.inOut', onUpdate: paint, onComplete: exit });
     });
     function exit() {
+      settle();   // fonts are in and the headline is fitted: show the page again before the slats open
       gsap.timeline({ onComplete: () => { L.remove(); ScrollTrigger.refresh(); } })
         .to('.loader-inner', { autoAlpha: 0, filter: 'blur(12px)', y: -14, duration: .55, ease: 'power2.in' })
         .to('.slats i', { scaleY: 0, duration: 1.05, ease: 'expo.inOut', stagger: { each: .045, from: 'center' } }, '-=.2')
@@ -1447,10 +1464,21 @@
     const dist = () => Math.max(0, track.scrollWidth - innerWidth);
     /* pin once the whole section is on screen; if a very short screen can't hold it, pin when its bottom (the card text) arrives */
     const pinAt = () => work.offsetHeight > innerHeight + 1 ? 'bottom bottom' : 'top top';
+    /* the pin is CSS sticky inside a spacer as tall as the section plus the scroll distance, instead of ScrollTrigger's fixed pin.
+       It holds and releases at exactly the same scroll positions, but switching an element to position:fixed while scrolling
+       counts as a large layout shift in Core Web Vitals (CLS), and sticky never does. Sticky is lifted while ScrollTrigger
+       measures, so every trigger sees the same layout it saw with the old pin. */
+    const hold = document.createElement('div'); hold.className = 'work-hold';
+    work.before(hold); hold.appendChild(work);
+    const unstick = () => { work.style.position = ''; work.style.top = ''; hold.style.height = (work.offsetHeight + dist()) + 'px'; };
+    const stick = () => { work.style.position = 'sticky'; work.style.top = Math.min(0, innerHeight - work.offsetHeight) + 'px'; };
+    ScrollTrigger.addEventListener('refreshInit', unstick);
+    ScrollTrigger.addEventListener('refresh', stick);
+    unstick();   // sticky goes on with the next refresh, once everything has been measured
     const tween = gsap.to(track, {
       x: () => -dist(), ease: 'none',
       scrollTrigger: {
-        trigger: '#work', start: pinAt, end: () => '+=' + dist(), pin: true, scrub: 1, invalidateOnRefresh: true, anticipatePin: 1,
+        trigger: '#work', start: pinAt, end: () => '+=' + dist(), scrub: 1, invalidateOnRefresh: true,
         onUpdate: s => { if (workCount) workCount.textContent = String(Math.min(cards.length, Math.round(s.progress * (cards.length - 1)) + 1)).padStart(2, '0'); }
       }
     });
@@ -1478,6 +1506,12 @@
     const ltRows = $('.case .lt-rows'), ltThumb = $('.case .lt-thumb');
     if (ltRows) gsap.timeline({ scrollTrigger: { trigger: ltRows.closest('.case'), containerAnimation: tween, start: 'left 70%', end: 'right left', scrub: true } })
       .fromTo(ltRows, { yPercent: 0 }, { yPercent: -13, ease: 'none' }, 0).fromTo(ltThumb, { yPercent: 0 }, { yPercent: 50, ease: 'none' }, 0);
+    return () => {   // leaving the desktop layout: drop the sticky spacer
+      ScrollTrigger.removeEventListener('refreshInit', unstick);
+      ScrollTrigger.removeEventListener('refresh', stick);
+      work.style.position = ''; work.style.top = '';
+      if (hold.parentNode) hold.replaceWith(work);
+    };
   });
   mm.add('(max-width: 899px), (max-height: 559px)', () => {
     cards.forEach((card, i) => {
@@ -1504,5 +1538,5 @@
   gsap.from('.row', { y: 30, opacity: .2, duration: 1, ease: 'expo.out', stagger: .08, scrollTrigger: { trigger: '.rows', start: 'top 85%' } });
   gsap.from('.toolkit .chip', { y: 12, opacity: 0, duration: .7, ease: 'expo.out', stagger: .04, scrollTrigger: { trigger: '.toolkit', start: 'top 92%' } });
 
-  if (document.fonts) document.fonts.ready.then(() => ScrollTrigger.refresh());
+  /* (fonts.ready already refreshes ScrollTrigger once, right after fitting the headline; a second full refresh here only cost time) */
 })();

@@ -132,6 +132,15 @@
       <p class="hero-lead" data-fade>I combine product thinking, UX design, and AI-powered development to turn ideas into real, functional products, from complex enterprise SaaS to AI-powered experiences.</p>
     </div>
   </section>
+  <!-- once a frame with the hero in it has painted (under the opaque loader, so the browser records it as the main content),
+       keep the covered page out of paint until the loader leaves, so font swaps under it don't count as layout shifts.
+       site.js takes it from there; CSS shows the page again after 6s regardless -->
+  <script>
+  (function(){ if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ window.__aaPainted = true;
+      if (document.getElementById('loader') && !window.__aaSettled) document.documentElement.classList.add('is-settling'); }); });
+  })();
+  </script>
 
   <div class="band" aria-label="Capabilities">
     <div class="mq" id="mq">
