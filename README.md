@@ -53,7 +53,7 @@ Answers can include layout blocks the AI picks per question: list, cards, accord
 
 All content lives in `index.html`, inside `<div id="activities">`.
 
-- **Upcoming events** use `data-show-until="YYYY-MM-DD"`, and the matching past-workshop entry uses `data-show-from="YYYY-MM-DD"`. After the event date, the card hides itself and the entry appears under Workshops & talks, with no code change needed. The "In N days" label comes from `data-countdown`.
+- **Upcoming events** use `data-show-until="YYYY-MM-DD"`, and the matching past-workshop entry uses `data-show-from="YYYY-MM-DD"`. After the event date, the card hides itself and the entry appears under Workshops & talks, with no code change needed. The "In N days" label comes from `data-countdown`. When no `.fld-feature` card is visible, the whole Upcoming section and its index link hide themselves and the remaining sections renumber; add a new `.fld-feature` card inside `#fld-upcoming` and it comes back.
 - **Gallery photos** go in `assets/images/field/` as `.webp` (about 1400px on the long side) and are added as an `<li class="fld-shot-item">` in `#fldStrip`. Every photo is shown in the same 4:3 frame. Add `class="is-slide"` or `class="is-poster"` to show a slide or poster in full instead of cropping it.
 - **Topics line** under the title has a desktop version (`.fld-eb-d`) and a phone version (`.fld-eb-m`).
 
