@@ -318,6 +318,15 @@
       const n = Math.round((day(el.dataset.countdown) - today) / 864e5);
       el.textContent = n > 1 ? 'In ' + n + ' days' : n === 1 ? 'Tomorrow' : n === 0 ? 'Today' : 'Past';
     });
+    /* no upcoming event left: drop the Upcoming section and its index link, renumber the rest */
+    const up = $('#fld-upcoming');
+    if (up && !$$('.fld-feature', up).some(el => !el.hidden)) {
+      up.hidden = true;
+      const pad = i => String(i).padStart(2, '0');
+      $$('.fld-index a').forEach(a => { if (a.getAttribute('href') === '#fld-upcoming') a.hidden = true; });
+      $$('.fld-index a:not([hidden]) > span').forEach((s, i) => { s.textContent = pad(i + 1); });
+      $$('.fld-sec:not([hidden]) .fld-n').forEach((s, i) => { s.textContent = pad(i + 1); });
+    }
   })();
   /* ---------- In the field: photo strip arrows ---------- */
   (function fieldStrip() {
