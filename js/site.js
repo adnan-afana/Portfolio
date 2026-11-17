@@ -7,6 +7,8 @@
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
   const hasGsap = !!(window.gsap && window.ScrollTrigger);
   if (hasGsap) gsap.registerPlugin(ScrollTrigger);
+  /* run heavy work after the browser has painted the response to a tap/click (keeps INP low) */
+  const afterPaint = fn => requestAnimationFrame(() => setTimeout(fn, 0));
 
   /* ---------- Kingston clock (Eastern time) ---------- */
   const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -299,7 +301,8 @@
 
   /* ---------- smooth scroll ---------- */
   let lenis = null, scrollY = window.scrollY, velocity = 0;
-  if (window.Lenis && !reduce) {
+  // phones and tablets scroll smoothly on their own; Lenis there only adds main-thread work on every frame
+  if (window.Lenis && !reduce && fine) {
     lenis = new Lenis({ duration: 1.15, easing: t => Math.min(1, 1.001 - Math.pow(2, -10 * t)), smoothWheel: true });
     lenis.on('scroll', e => { scrollY = e.scroll; velocity = e.velocity; onScroll(); if (hasGsap) ScrollTrigger.update(); });
     if (hasGsap) { gsap.ticker.add(t => lenis.raf(t * 1000)); gsap.ticker.lagSmoothing(0); }
@@ -374,6 +377,9 @@
     });
     let i = 0, inView = false, hold = false, anim = null;
     if (all) all.textContent = pad(slides.length);
+    // split every quote into words ahead of time, so a tap to the next quote doesn't have to rebuild its DOM
+    const presplit = () => slides.forEach(s => { const p = $('.tst-q p', s); if (p && !p._words) p._words = splitWords(p); });
+    if (window.requestIdleCallback) requestIdleCallback(presplit, { timeout: 3000 }); else setTimeout(presplit, 1500);
     function run() {
       anim?.cancel(); anim = null;
       const r = rings[i]; if (!r || slides.length < 2 || !r.animate) return;
@@ -453,8 +459,11 @@
       if (window.ScrollTrigger) ScrollTrigger.refresh();
       jump(target || (v === 'work' ? 0 : show));
     };
-    if (!window.gsap || reduce) { swap(); return; }
+    if (!window.gsap || reduce) { switching = true; afterPaint(() => { swap(); switching = false; }); return; }
     switching = true;
+    afterPaint(() => curtain(v, show, swap));   // the tab moves on the tap; the curtain is built right after that paint
+  }
+  function curtain(v, show, swap) {
     const vt = $('#vt'), slats = $$('#vt i'), lbl = $('#vtLabel');
     lbl.textContent = ($('[data-view="' + v + '"]') || {}).textContent || (v === 'work' ? 'Work' : 'In the field');
     vt.classList.add('on');
@@ -979,9 +988,11 @@
       ctx.globalAlpha = .3; ctx.fillStyle = ink; ctx.fill(inkPath);
       ctx.globalAlpha = .7; ctx.fillStyle = red; ctx.fill(redPath);
     }
+    let skip = false;
     function frame(t) {
       requestAnimationFrame(frame);
       if (!visible) return;
+      if (!fine && (skip = !skip)) return;   // touch screens: no cursor to follow, so 30fps is plenty and frees the main thread for taps
       if (m.tx < -9000 || m.x < -9000) { m.x = m.tx; m.y = m.ty; }
       else { m.x += (m.tx - m.x) * .12; m.y += (m.ty - m.y) * .12; }
       draw(t);
@@ -999,10 +1010,12 @@
   (function marquee() {
     if (reduce) return;
     const mq = $('#mq'), unit = $('.mq-inner', mq);
-    let x = 0, dir = -1, W = unit.offsetWidth, skew = 0;
+    let x = 0, dir = -1, W = unit.offsetWidth, skew = 0, onScreen = true;
     addEventListener('resize', () => { W = unit.offsetWidth; });
     if (document.fonts) document.fonts.ready.then(() => { W = unit.offsetWidth; });
+    new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(mq.parentElement || mq);
     const loop = () => {
+      if (!onScreen) { velocity *= .92; return; }
       if (velocity > .1) dir = -1; else if (velocity < -.1) dir = 1;
       const speed = .6 + Math.min(Math.abs(velocity) * .5, 14);
       x += speed * dir; if (x <= -W) x += W; if (x > 0) x -= W;
@@ -1293,7 +1306,17 @@
         + `</div></section>`;
     }
 
+    /* stop the looping animations of the live UI cloned into the case view, so closed cases don't keep running */
+    function killLive() {
+      body.querySelectorAll('*').forEach(el => {
+        const c = el._c || el._ctl; if (!c) return;
+        if (c.loop) c.loop.kill();
+        if (Array.isArray(c.tl)) c.tl.forEach(t => t.kill());
+        el._c = el._ctl = null;
+      });
+    }
     function render(i) {
+      killLive();
       const c = CASES[i], n = CASES[(i + 1) % CASES.length];
       const vis = cards[i] && $('.case-vis', cards[i]);
       body.innerHTML = `
@@ -1340,22 +1363,31 @@
       const wasOpen = openIdx >= 0;
       openIdx = i;
       if (!wasOpen) lastFocus = document.activeElement;
-      render(i);
-      cs.hidden = false; lock(true);
-      requestAnimationFrame(() => requestAnimationFrame(() => cs.classList.add('open')));
-      setTimeout(() => closeBtn.focus({ preventScroll: true }), wasOpen ? 0 : 450);
+      cs.hidden = false;
       document.title = CASES[i].title + ' \u2666 Adnan Afana';
+      // let the tap paint first, then lock the page and build the (large) case page and slide it in
+      afterPaint(() => {
+        if (openIdx !== i) return;
+        if (!wasOpen) lock(true);
+        render(i);
+        requestAnimationFrame(() => requestAnimationFrame(() => cs.classList.add('open')));
+        setTimeout(() => closeBtn.focus({ preventScroll: true }), wasOpen ? 0 : 450);
+      });
     }
     function closeCase(fromUi) {
       if (openIdx < 0) return;
       const i = openIdx; openIdx = -1;
       cs.classList.remove('open');
-      setTimeout(() => { if (openIdx < 0) { cs.hidden = true; body.innerHTML = ''; } }, reduce ? 0 : 700);
-      lock(false);
+      setTimeout(() => { if (openIdx < 0) { killLive(); cs.hidden = true; body.innerHTML = ''; } }, reduce ? 0 : 700);
       document.title = BASE_TITLE;
       if (fromUi && location.hash.startsWith('#case/')) history.replaceState(null, '', location.pathname + location.search);
-      const back = (cards[i] && $('.case-link', cards[i])) || lastFocus;
-      if (back && back.focus) back.focus({ preventScroll: true });
+      // unlock the page and move focus after the slide-out has started painting
+      afterPaint(() => {
+        if (openIdx >= 0) return;
+        lock(false);
+        const back = (cards[i] && $('.case-link', cards[i])) || lastFocus;
+        if (back && back.focus) back.focus({ preventScroll: true });
+      });
     }
     const fromHash = () => {
       const m = location.hash.match(/^#case\/([\w-]+)/);
