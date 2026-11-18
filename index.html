@@ -92,6 +92,7 @@
 </script>
 </head>
 <body>
+<a class="skip-link" href="#top" data-skip>Skip to main content</a>
 
 <div class="loader" id="loader" aria-hidden="true">
   <div class="slats"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
@@ -100,7 +101,7 @@
     <div class="loader-bottom">
       <div class="loader-count" id="lc">000</div>
       <div class="loader-bar"><i id="lb"></i></div>
-      <div class="loader-top mono"><span id="ls">Loading type</span><span><span>Kingston</span> <time data-clock>--:--:--</time></span></div>
+      <div class="loader-top mono"><span id="ls">Loading type</span><span><span>My time</span> <time data-clock>--:--:--</time></span></div>
     </div>
   </div>
 </div>
@@ -110,16 +111,21 @@
 <div class="cursor" id="cursor" aria-hidden="true"><span class="cursor-dot"></span><span class="cursor-label" id="cursorLabel">View</span></div>
 
 <header class="nav" id="nav">
-  <a class="brand" href="#top" data-scrollto="#top" aria-label="Adnan Afana, back to top"><span class="brand-mark">AA</span><span class="brand-name">Adnan Afana</span></a>
+  <a class="brand" href="#top" data-scrollto="#top"><span class="brand-mark" aria-hidden="true">AA</span><span class="brand-name">Adnan Afana</span><span class="sr-only">, back to top</span></a>
+  <nav class="nav-views" aria-label="Primary">
   <div class="toggle" id="viewToggle" role="tablist" aria-label="View">
-    <button type="button" role="tab" aria-selected="true" class="is-on" data-view="work" data-scramble>Work</button>
-    <button type="button" role="tab" aria-selected="false" data-view="activities" data-scramble>In the field</button>
+    <button type="button" role="tab" id="tab-work" aria-controls="workView" aria-selected="true" tabindex="0" class="is-on" data-view="work" data-scramble>Work</button>
+    <button type="button" role="tab" id="tab-activities" aria-controls="activities" aria-selected="false" tabindex="-1" data-view="activities" data-scramble>In the field</button>
     <span class="toggle-ind" id="toggleInd" aria-hidden="true"></span>
   </div>
+  </nav>
+  <div class="nav-end">
+  <button type="button" class="motion-btn mono" id="motionBtn"><span class="motion-ico" aria-hidden="true"></span><span class="motion-lbl">Pause motion</span></button>
   <a class="nav-status mono" href="mailto:adnanafana0@gmail.com?subject=Hi%20Adnan" data-scramble aria-label="Email me"><svg class="mail-ico" width="15" height="11" viewBox="0 0 15 11" fill="none" aria-hidden="true"><rect x=".75" y=".75" width="13.5" height="9.5" stroke="currentColor" stroke-width="1.5"/><path d="M1.2 1.4 7.5 6l6.3-4.6" stroke="currentColor" stroke-width="1.5"/></svg><span class="sc lbl-full">Email me</span><span class="lbl-short" aria-hidden="true">Email</span></a>
+  </div>
 </header>
 
-<main id="top">
+<main id="top" tabindex="-1">
   <section class="hero wrap" id="hero">
     <canvas class="field" id="field" aria-hidden="true"></canvas>
     <div class="hero-eyebrow mono" data-fade><span>AI Product Builder &amp; Consultant</span><span>Product design<i class="dia" aria-hidden="true"></i>AI development<i class="dia" aria-hidden="true"></i>Business consulting</span><span><span>Based in</span> <b>Kingston, Ontario</b></span></div>
@@ -142,7 +148,7 @@
   })();
   </script>
 
-  <div class="band" aria-label="Capabilities">
+  <div class="band" role="group" aria-label="Capabilities">
     <div class="mq" id="mq">
       <div class="mq-inner">
         <span class="mq-item">AI product design</span><span class="mq-item ghost">Interaction</span><span class="mq-item">Motion systems</span><span class="mq-item ghost">Prototyping</span><span class="mq-item">Design systems</span><span class="mq-item ghost">Product strategy</span>
@@ -153,21 +159,21 @@
     </div>
   </div>
 
-  <div id="workView">
+  <div id="workView" role="tabpanel" aria-labelledby="tab-work">
   <!-- Testimonials (from the old Webflow site). Add or remove <figure class="tst"> items freely
        (keep is-on on the first, hidden on the rest); the counter and arrows adapt.
        Without a photo, put the person's initials inside .tst-av instead of the <img>. -->
   <section class="sec wrap tst-sec" id="testimonials" aria-roledescription="carousel" aria-label="What clients say">
     <div class="statement tst-grid">
       <div class="tst-side">
-        <p class="eyebrow mono">What clients say</p>
-        <a class="tst-more" href="https://www.upwork.com/freelancers/uxadnanafana" target="_blank" rel="noopener" aria-label="More client reviews on my Upwork profile (opens in a new tab)">
+        <h2 class="eyebrow mono">What clients say</h2>
+        <a class="tst-more" href="https://www.upwork.com/freelancers/uxadnanafana" target="_blank" rel="noopener">
           <span class="tst-more-t">More reviews on Upwork <span class="tst-more-a" aria-hidden="true">↗</span></span>
-          <span class="tst-more-s mono">Top Rated Plus · 100% Job Success</span>
+          <span class="tst-more-s mono">Top Rated Plus · 100% Job Success</span><span class="sr-only"> (opens in a new tab)</span>
         </a>
         <span class="tst-hint mono" aria-hidden="true">Arrow keys to browse</span>
       </div>
-      <div class="tst-stage" id="tstStage" tabindex="0" aria-live="off" aria-label="Testimonials, changing automatically. Use the left and right arrow keys to browse; focus pauses the rotation.">
+      <div class="tst-stage" id="tstStage" role="group" tabindex="0" aria-live="off" aria-label="Testimonials, changing automatically. Use the left and right arrow keys to browse; focus pauses the rotation.">
         <figure class="tst is-on" id="tst1" role="group" aria-roledescription="slide" aria-label="1 of 8">
           <blockquote class="tst-q"><p>We hired Adnan the first month we launched our startup. Adnan was phenomenal. He went above and beyond. He delivered more than what we expected from him. He is one of the best freelancers I have ever worked with.</p></blockquote>
           <figcaption class="tst-by"><span class="tst-av" aria-hidden="true"><img src="assets/images/testimonials/yuseph-swess.webp" alt="" width="40" height="40" loading="lazy" decoding="async"></span><span><b>Yuseph Swess</b><span class="mono">Co-Founder · Afdal</span></span></figcaption>
@@ -206,7 +212,7 @@
 
   <section class="sec wrap" id="about">
     <div class="statement">
-      <p class="eyebrow mono">About</p>
+      <h2 class="eyebrow mono">About</h2>
       <p class="statement-text" id="statement"><span class="sl">I work across business, design,</span> <span class="sl">and technology, validating ideas</span> <span class="sl">through research and interviews.</span> <mark class="sl">I turn bold ideas and tough challenges</mark> <span>into real products. I guide strategy, design, development, launch, and ongoing improvement.</span></p>
       <ul class="facts">
         <li><span class="mono fact-k">Create</span><strong>Digital Products</strong><span class="muted">Product strategy, UX/UI, SaaS platforms, and complex digital experiences.</span></li>
@@ -225,7 +231,7 @@
         <article class="case" data-cursor="View case">
           <a class="case-link" href="https://www.adnanafana.com/project/leaseteq" target="_blank" rel="noopener" aria-label="LeaseTeq case study (opens in a new tab)"></a>
           <div class="case-vis">
-            <div class="mock m-lt"><div class="lt" aria-label="LeaseTeq operations portal: an active lease contract with financing progress and transactions">
+            <div class="mock m-lt"><div class="lt" role="img" aria-label="LeaseTeq operations portal: an active lease contract with financing progress and transactions">
 <div class="lt-win" aria-hidden="true">
   <aside class="lt-side">
     <svg class="lt-logo" viewBox="0 0 32 32"><path d="M11.4 20.6 6.8 16 16 6.8 25.2 16 16 25.2"/></svg>
@@ -578,7 +584,7 @@
   </section>
   </div>
 
-  <div id="activities" hidden>
+  <div id="activities" role="tabpanel" aria-labelledby="tab-activities" hidden>
   <section class="wrap fld-intro">
     <div class="sec-head">
       <h2 class="h2">In the field</h2>
@@ -587,11 +593,11 @@
     <div class="fld-intro-grid">
       <p class="fld-lead">I’m based in Kingston, and most weeks I’m in a room with business owners: running volunteer AI workshops, advising on products and websites, and mentoring people starting their careers. This is where that work lives.</p>
       <nav class="fld-index mono" aria-label="On this page">
-        <a href="#fld-upcoming" data-scrollto="#fld-upcoming"><span>01</span>Upcoming</a>
-        <a href="#fld-workshops" data-scrollto="#fld-workshops"><span>02</span>Workshops &amp; talks</a>
-        <a href="#fld-consulting" data-scrollto="#fld-consulting"><span>03</span>Consulting &amp; mentoring</a>
-        <a href="#fld-community" data-scrollto="#fld-community"><span>04</span>Community</a>
-        <a href="#fld-writing" data-scrollto="#fld-writing"><span>05</span>Writing</a>
+        <a href="#fld-upcoming" data-scrollto="#fld-upcoming"><span aria-hidden="true">01</span>Upcoming</a>
+        <a href="#fld-workshops" data-scrollto="#fld-workshops"><span aria-hidden="true">02</span>Workshops &amp; talks</a>
+        <a href="#fld-consulting" data-scrollto="#fld-consulting"><span aria-hidden="true">03</span>Consulting &amp; mentoring</a>
+        <a href="#fld-community" data-scrollto="#fld-community"><span aria-hidden="true">04</span>Community</a>
+        <a href="#fld-writing" data-scrollto="#fld-writing"><span aria-hidden="true">05</span>Writing</a>
       </nav>
     </div>
   </section>
@@ -737,20 +743,21 @@
   </section>
   </div>
 
-  <section class="contact wrap" id="contact">
+</main>
+  <footer class="contact wrap" id="contact">
     <p class="eyebrow mono">Contact</p>
     <h2 class="h2" id="contactTitle" style="margin-top:20px">Let’s build the product your business needs.</h2>
     <div class="email-row">
       <span class="email" id="emailText">adnanafana0@gmail.com</span>
       <button class="btn primary" type="button" data-copy><span class="btn-label">Copy email</span></button>
+      <span class="sr-only" role="status" id="copyStatus"></span>
     </div>
-    <footer class="foot mono">
+    <div class="foot mono">
       <span>© 2026 Adnan Afana</span>
-      <span><span>Kingston</span> <time data-clock>--:--:--</time> <span>ET</span></span>
+      <span><span>My time</span> <time data-clock>--:--:--</time> <span>ET</span></span>
       <button type="button" data-scrollto="#top">Back to top ↑</button>
-    </footer>
-  </section>
-</main>
+    </div>
+  </footer>
 <div class="cs" id="cs" role="dialog" aria-modal="true" aria-labelledby="csTitle" data-lenis-prevent hidden>
   <div class="cs-top mono"><button type="button" class="cs-close" id="csClose"><span aria-hidden="true">←</span> Back to work</button><span class="cs-count" id="csCount"></span><span class="cs-bar" id="csBar" aria-hidden="true"></span></div>
   <div id="csBody"></div>
@@ -776,18 +783,19 @@
   window.addEventListener('load', function(){ setTimeout(function(){ box.hidden = false; requestAnimationFrame(function(){ box.classList.add('is-in'); }); }, 3200); });
 })();
 </script>
-<div class="chat" id="chat" hidden>
+<aside class="chat" id="chat" aria-label="Ask Afana AI" hidden>
   <section class="chat-panel" id="chatPanel" role="dialog" aria-label="Afana AI, Adnan's AI assistant" hidden>
     <header class="chat-head"><div><p class="mono chat-kicker">Adnan's AI assistant</p><h2>Afana AI</h2></div><button type="button" class="chat-x" id="chatClose" aria-label="Close chat">×</button></header>
-    <div class="chat-log" id="chatLog" data-lenis-prevent aria-live="polite">
+    <div class="chat-log" id="chatLog" data-lenis-prevent>
       <div class="msg bot">Hi, I'm Afana AI, Adnan's AI assistant. Ask me about his work, skills or how he can help with your project.</div>
     </div>
     <div class="chat-sugg" id="chatSugg"><button type="button">What does Adnan do?</button><button type="button">What's his experience?</button><button type="button">How does he work?</button><button type="button">How do I contact him?</button></div>
     <form class="chat-form" id="chatForm"><label class="sr-only" for="chatInput">Your question</label><input id="chatInput" type="text" placeholder="Ask a question…" autocomplete="off" maxlength="500"><button type="submit" class="chat-send mono" id="chatSend">Send</button></form>
+    <p class="sr-only" role="status" id="chatStatus"></p>
     <p class="chat-note">Afana AI answers from information Adnan provided. Powered by Claude.</p>
   </section>
   <button class="chat-fab mono" id="chatFab" type="button" aria-expanded="false" aria-controls="chatPanel"><span class="chat-dot" aria-hidden="true"></span>Ask Afana AI</button>
-</div>
+</aside>
 
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>

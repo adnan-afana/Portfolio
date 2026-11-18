@@ -7,13 +7,46 @@
   const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
   const hasGsap = !!(window.gsap && window.ScrollTrigger);
   if (hasGsap) gsap.registerPlugin(ScrollTrigger);
+  if (!hasGsap || reduce) root.classList.add('gallery-static');   // no pinned gallery: lay the cards out as a grid
   /* run heavy work after the browser has painted the response to a tap/click (keeps INP low) */
   const afterPaint = fn => requestAnimationFrame(() => setTimeout(fn, 0));
 
-  /* ---------- Kingston clock (Eastern time) ---------- */
+  /* ---------- "Pause motion" (WCAG 2.2.2): one switch for everything that moves on its own ----------
+     Starts paused for visitors who ask their system for reduced motion; the choice is remembered. Scroll-linked
+     effects are not affected: they only move when the visitor scrolls. */
+  const motion = { paused: reduce, subs: new Set() };
+  try { const v = localStorage.getItem('aa-motion'); if (v === 'paused' || v === 'playing') motion.paused = v === 'paused'; } catch (e) {}
+  const startedStill = reduce || motion.paused;   // case-card live UIs are built still (finished) when the page opens paused
+  root.classList.toggle('motion-paused', motion.paused);
+  (function motionButton() {
+    const b = $('#motionBtn'); if (!b) return;
+    const paint = () => { $('.motion-lbl', b).textContent = motion.paused ? 'Play motion' : 'Pause motion'; };
+    motion.set = p => {
+      motion.paused = p; root.classList.toggle('motion-paused', p);
+      try { localStorage.setItem('aa-motion', p ? 'paused' : 'playing'); } catch (e) {}
+      paint(); motion.subs.forEach(f => f(p));
+    };
+    b.addEventListener('click', () => motion.set(!motion.paused));
+    paint();
+  })();
+  /* live case-card UIs: each controller c has c.vis (on screen) and c.tl / c.loop timelines */
+  const live = new Set();
+  const halted = c => !c.vis || motion.paused;
+  const applyLive = c => {
+    if (Array.isArray(c.tl)) c.tl.forEach(t => t.paused(halted(c)));
+    if (c.loop) c.loop.paused(halted(c));
+    if (c.el && c.el.classList.contains('cr')) c.el.classList.toggle('run', !halted(c));
+  };
+  motion.subs.add(() => live.forEach(applyLive));
+
+  /* ---------- "My time" clock (Eastern time); stops with "Pause motion" ---------- */
   const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-  const clock = () => { const t = fmt.format(new Date()); $$('[data-clock]').forEach(e => e.textContent = t); };
+  let ticked = false;
+  const clock = () => { if (ticked && motion.paused) return; ticked = true; const t = fmt.format(new Date()); $$('[data-clock]').forEach(e => e.textContent = t); };
   clock(); setInterval(clock, 1000);
+
+  /* ---------- skip link: move focus into the page content without changing the URL ---------- */
+  $$('[data-skip]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); const m = $('main'); if (m) m.focus({ preventScroll: true }); }));
 
   /* ---------- rotating word: build → customize → evolve ---------- */
   (function rotator() {
@@ -29,14 +62,18 @@
 
   /* ---------- copy email ---------- */
   const EMAIL = 'adnanafana0@gmail.com';
+  const copyStatus = $('#copyStatus');   // role="status": screen readers hear the result (WCAG 4.1.3)
   $$('[data-copy]').forEach(b => b.addEventListener('click', async () => {
     const label = b.querySelector('.btn-label');
     const orig = label.dataset.text || (label.dataset.text = label.textContent);
-    try { await navigator.clipboard.writeText(EMAIL); label.textContent = 'Copied'; }
+    let msg;
+    try { await navigator.clipboard.writeText(EMAIL); label.textContent = 'Copied'; msg = 'Email address copied'; }
     catch (e) {
       const r = document.createRange(); r.selectNodeContents($('#emailText'));
       const s = getSelection(); s.removeAllRanges(); s.addRange(r); label.textContent = 'Email selected';
+      msg = 'Email address selected. Press Control C or Command C to copy it.';
     }
+    if (copyStatus) { copyStatus.textContent = ''; setTimeout(() => { copyStatus.textContent = msg; }, 50); setTimeout(() => { copyStatus.textContent = ''; }, 5000); }
     setTimeout(() => label.textContent = orig, 1600);
   }));
 
@@ -44,6 +81,22 @@
   (function chat() {
     const box = $('#chat'); if (!box) return;
     box.hidden = false;
+    /* the footer pushes the chat button up as you scroll to the very end, so it never sits on "Back to top" (WCAG 2.4.7).
+       It moves with the scroll, not on its own, and only where the two would overlap (on phones they don't). */
+    const btt = $('.foot button');
+    if (btt) {
+      let lift = 0, queued = false;
+      const place = () => {
+        queued = false;
+        const f = $('#chatFab').getBoundingClientRect(), b = btt.getBoundingClientRect();
+        const bottom = f.bottom + lift, left = f.left, right = f.right;              // where the button sits when not lifted
+        const across = b.right > left - 8 && b.left < right + 8;                      // same column as Back to top
+        const next = across && b.top < innerHeight ? Math.max(0, Math.ceil(bottom - (b.top - 14))) : 0;
+        if (next !== lift) { lift = next; box.style.translate = lift ? `0 ${-lift}px` : ''; }
+      };
+      const queue = () => { if (!queued) { queued = true; requestAnimationFrame(place); } };
+      addEventListener('scroll', queue, { passive: true }); addEventListener('resize', queue); queue();
+    }
     const fab = $('#chatFab'), panel = $('#chatPanel'), log = $('#chatLog'), form = $('#chatForm'), input = $('#chatInput'),
       send = $('#chatSend'), sugg = $('#chatSugg'), closeBtn = $('#chatClose'), cur = $('#cursor');
     box.addEventListener('mouseenter', () => { if (cur) cur.style.opacity = '0'; });
@@ -58,7 +111,15 @@
     const open = v => { panel.hidden = !v; fab.setAttribute('aria-expanded', String(v)); if (v) setTimeout(() => input.focus(), 50); };
     fab.addEventListener('click', () => open(panel.hidden));
     closeBtn.addEventListener('click', () => { open(false); fab.focus(); });
-    addEventListener('keydown', e => { if (e.key === 'Escape' && !panel.hidden) open(false); });
+    // Esc closes the panel; if focus was inside it, it goes back to the button that opened it (WCAG 2.4.3)
+    addEventListener('keydown', e => {
+      if (e.key !== 'Escape' || panel.hidden) return;
+      const inside = panel.contains(document.activeElement);
+      open(false); if (inside) fab.focus();
+    });
+    // one polite announcement per answer instead of every streamed fragment (WCAG 4.1.3)
+    const statusEl = $('#chatStatus');
+    const say = t => { if (!statusEl) return; statusEl.textContent = ''; setTimeout(() => { statusEl.textContent = t; }, 60); };
     const add = (cls, text) => { const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; };
     const fail = code => Object.assign(new Error(code), { code });
 
@@ -112,7 +173,8 @@
         arr(b.items, 8).forEach((it, i) => {
           if (!it || !str(it.title, 100)) return;
           const d = el('details'), sm = el('summary');
-          sm.appendChild(el('span', null, str(it.title, 100))); sm.appendChild(el('i', 'blk-acc-ico', '+'));
+          sm.appendChild(el('span', null, str(it.title, 100)));
+          const ico = el('i', 'blk-acc-ico', '+'); ico.setAttribute('aria-hidden', 'true'); sm.appendChild(ico);
           d.appendChild(sm);
           if (str(it.text, 600)) d.appendChild(inline(el('p'), str(it.text, 600)));
           d.addEventListener('toggle', () => { sm.lastChild.textContent = d.open ? '−' : '+'; });
@@ -227,6 +289,7 @@
       add('user', q); input.value = '';
       turns.push({ role: 'user', content: q });
       const bubble = add('bot thinking', 'Thinking…');
+      say('Afana AI is answering…');
       let render = null;
       const show = (t, final) => { if (!render) { bubble.textContent = ''; render = renderer(bubble); } render(t, final); };
       ctl = new AbortController();
@@ -255,19 +318,21 @@
         if (!text) throw fail('empty');
         show(text, true);
         turns.push({ role: 'assistant', content: text });
+        say('Afana AI: ' + bubble.textContent.replace(/\s+/g, ' ').trim());
       } catch (e) {
         const code = e && (e.name === 'AbortError' ? 'cancelled' : e.code);
         if (code === 'cancelled') {
-          if (text.trim()) { show(text, true); turns.push({ role: 'assistant', content: text }); } else { bubble.remove(); turns.pop(); }
+          if (text.trim()) { show(text, true); turns.push({ role: 'assistant', content: text }); say('Answer stopped. ' + bubble.textContent.replace(/\s+/g, ' ').trim()); } else { bubble.remove(); turns.pop(); say('Answer stopped.'); }
         } else if (OFF.includes(code)) {
           bubble.className = 'msg err';
           bubble.textContent = "The AI chat isn't available right now. You can still email Adnan at adnanafana0@gmail.com.";
-          dead = true; input.disabled = true; send.disabled = true; turns.pop();
+          dead = true; input.disabled = true; send.disabled = true; turns.pop(); say(bubble.textContent);
         } else if (text.trim()) {
           show(text, true); turns.push({ role: 'assistant', content: text });
           add('err', 'The answer was cut off. Try asking again.');
+          say('Afana AI: ' + bubble.textContent.replace(/\s+/g, ' ').trim() + ' The answer was cut off. Try asking again.');
         } else {
-          bubble.className = 'msg err'; bubble.textContent = COPY[code] || 'Something went wrong. Please try again.'; turns.pop();
+          bubble.className = 'msg err'; bubble.textContent = COPY[code] || 'Something went wrong. Please try again.'; turns.pop(); say(bubble.textContent);
         }
       } finally {
         busy = false; ctl = null; if (!dead) send.textContent = 'Send';
@@ -294,6 +359,7 @@
   }
   if (!reduce) $$('[data-scramble]').forEach(host => {
     const target = host.querySelector('.sc') || host;
+    if (!host.hasAttribute('aria-label')) host.setAttribute('aria-label', target.textContent.trim());   // name stays fixed while the letters shuffle
     host.addEventListener('mouseenter', () => scramble(target));
     host.addEventListener('focus', () => scramble(target));
   });
@@ -385,7 +451,7 @@
       const r = rings[i]; if (!r || slides.length < 2 || !r.animate) return;
       const ms = dur(slides[i]);
       const a = anim = r.animate([{ strokeDashoffset: 100 }, { strokeDashoffset: 0 }], { duration: ms, easing: 'linear', fill: 'forwards' });
-      if (hold || !inView) a.pause();
+      if (hold || !inView || motion.paused) a.pause();   // no auto-advance while motion is paused (also the default with reduced motion)
       a.finished.then(() => { if (anim === a && a.currentTime >= ms - 20) { set(i + 1); tstReveal(slides[i]); } }).catch(() => {});
     }
     function set(n) {
@@ -394,14 +460,16 @@
       if (now) now.textContent = pad(i + 1);
       run();
     }
-    const sync = () => { const stop = hold || !inView; sec.classList.toggle('is-paused', stop); if (anim) stop ? anim.pause() : anim.play(); };
+    const sync = () => { const stop = hold || !inView || motion.paused; sec.classList.toggle('is-paused', stop); if (anim) stop ? anim.pause() : anim.play(); };
+    motion.subs.add(sync);
     set(0);
     const stmt = $('#statement');
     if (stmt && window.ResizeObserver) new ResizeObserver(() => sec.style.setProperty('--stmt-w', stmt.getBoundingClientRect().width + 'px')).observe(stmt);
     if (slides.length < 2) { $('.tst-count', sec)?.setAttribute('hidden', ''); return; }
     // the timer keeps running under the mouse; it only holds while a keyboard user has the quote focused
-    stage.addEventListener('focus', () => { hold = stage.matches(':focus-visible'); sync(); });
-    stage.addEventListener('blur', () => { hold = false; sync(); });
+    // while a keyboard user has the quote focused, rotation holds and each quote they move to is announced (WCAG 4.1.3)
+    stage.addEventListener('focus', () => { hold = stage.matches(':focus-visible'); if (hold) stage.setAttribute('aria-live', 'polite'); sync(); });
+    stage.addEventListener('blur', () => { hold = false; stage.setAttribute('aria-live', 'off'); sync(); });
     // browse without buttons: the custom cursor reads Previous / Next over each half of the quote,
     // a click (or tap) on that half moves, a swipe moves on touch, and the arrow keys work when focused
     const go = d => { set(i + d); tstReveal(slides[i]); };
@@ -450,7 +518,7 @@
     if (switching) return;
     if (v === view) { goTo(target || views[v]); return; }
     view = v;
-    tabs.forEach(b => { const on = b.dataset.view === v; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on); });
+    tabs.forEach(b => { const on = b.dataset.view === v; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
     placeInd();
     const show = views[v], hide = views[v === 'work' ? 'activities' : 'work'];
     const swap = () => {
@@ -479,6 +547,16 @@
         { y: 0, opacity: 1, duration: .85, ease: 'expo.out', stagger: { amount: .4 }, clearProps: 'transform,opacity' }, '-=.4');
   }
   tabs.forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+  /* tab keyboard pattern: Left/Right/Home/End move between the two views (WCAG 4.1.2) */
+  toggle.addEventListener('keydown', e => {
+    const i = tabs.indexOf(document.activeElement); if (i < 0) return;
+    const k = { ArrowRight: i + 1, ArrowLeft: i - 1, Home: 0, End: tabs.length - 1 }[e.key];
+    if (k === undefined) return;
+    e.preventDefault();
+    if (switching) return;   // mid-transition: clicks are ignored too, so focus and the selected view stay in step
+    const t = tabs[(k + tabs.length) % tabs.length];
+    t.focus(); setView(t.dataset.view);
+  });
 
   /* deep link into In the field (/#field or /#fld-...), e.g. "All writing" on an article page */
   let deepTarget = null;
@@ -488,7 +566,7 @@
     const t = h === '#field' ? views.activities : document.querySelector(h);
     if (!t || !views.activities.contains(t)) return;
     view = 'activities';
-    tabs.forEach(b => { const on = b.dataset.view === 'activities'; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on); });
+    tabs.forEach(b => { const on = b.dataset.view === 'activities'; b.classList.toggle('is-on', on); b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1; });
     placeInd();
     views.work.hidden = true; views.activities.hidden = false;
     document.body.classList.add('is-field');
@@ -585,6 +663,12 @@
      and re-fitting then forced two full layouts of the hero for nothing */
   let fitW = innerWidth;
   addEventListener('resize', () => { if (innerWidth !== fitW) { fitW = innerWidth; fitHero(); } });
+  /* measure again once the display font has really arrived: document.fonts.ready can resolve before the
+     Archivo request even starts, which left the headline sized for the narrower fallback font (WCAG 1.4.10) */
+  if (document.fonts) {
+    document.fonts.load('800 100px Archivo').then(() => { fitHero(); measureHero(); }).catch(() => {});
+    document.fonts.addEventListener('loadingdone', () => { fitHero(); measureHero(); });
+  }
   /* ---------- work: measure everything in the section that isn't card image (padding, heading, titles, text, tags)
      so the image takes exactly the height that's left and the whole card fits one screen ---------- */
   const workMQ = matchMedia('(min-width: 900px) and (min-height: 560px)');
@@ -613,7 +697,7 @@
 
   /* ---------- LeaseTeq live UI: plays once when it comes into view ---------- */
   (function leaseteq() {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches || !('IntersectionObserver' in window);
+    const still = startedStill || !('IntersectionObserver' in window);
     function count(el) {
       if (!el) return;
       const to = +el.dataset.to, t0 = performance.now() + 600, dur = 1800;
@@ -644,17 +728,17 @@
       if (n) n.textContent = Math.round(+n.dataset.to * p);
     };
     /* s = how far the entrance has drawn the gauge; q = the idle loop (empties, then redraws left to right) */
-    const vio = still ? null : new IntersectionObserver(es => es.forEach(e => { const c = e.target._ctl; if (!c) return; c.vis = e.isIntersecting; if (c.loop) c.loop.paused(!c.vis); }));
+    const vio = still ? null : new IntersectionObserver(es => es.forEach(e => { const c = e.target._ctl; if (!c) return; c.vis = e.isIntersecting; if (c.loop) c.loop.paused(halted(c)); }));
     window.ltCtl = lt => {
       if (lt._ctl) return lt._ctl;
-      const c = lt._ctl = { s: 0, q: 1, loop: null, vis: true };
+      const c = lt._ctl = { s: 0, q: 1, loop: null, vis: true }; c.el = lt; live.add(c);
       const draw = () => ltGauge(lt, c.s * c.q);
       c.start = () => {
         if (c.loop || still || !window.gsap) return;
         c.loop = gsap.timeline({ repeat: -1, delay: 2.4, repeatDelay: 2.4, onUpdate: draw })
           .to(c, { q: 0, duration: 1.1, ease: 'power3.inOut' })
           .to(c, { q: 1, duration: 1.8, ease: 'expo.out' }, '+=.25');
-        if (!c.vis) c.loop.pause();
+        if (halted(c)) c.loop.pause();
       };
       c.stop = () => { if (!c.loop) return; c.loop.kill(); c.loop = null; gsap.to(c, { q: 1, duration: .45, ease: 'power2.out', onUpdate: draw }); };
       c.set = s => { c.s = s; if (s < .999) c.stop(); else c.start(); draw(); };
@@ -678,18 +762,18 @@
       $$('.st-mile .st-r', st).forEach((el, i) => rise(el, seg(p, .42 + i * .07, .74 + i * .07)));
     };
     /* loop on time, not scroll: play the progress in (2.6s), hold 1s, ease it back out, play again right away; paused off screen */
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = startedStill;
     const vio = still || !window.gsap ? null : new IntersectionObserver(es => es.forEach(e => {
       const c = e.target._c; if (!c) return;
       c.vis = e.isIntersecting && e.intersectionRatio > .2;
       if (c.vis && !c.loop) c.loop = gsap.timeline({ repeat: -1, repeatDelay: .2, onUpdate: () => stSet(e.target, c.p) })
         .to(c, { p: 1, duration: 2.6, ease: 'none' })
         .to(c, { p: 0, duration: 1.4, ease: 'power1.inOut' }, '+=1');
-      if (c.loop) c.loop.paused(!c.vis);
+      if (c.loop) c.loop.paused(halted(c));
     }), { threshold: [0, .2] });
     window.stCtl = st => {
       if (st._c) return st._c;
-      const c = st._c = { p: 0, loop: null, vis: false };
+      const c = st._c = { p: 0, loop: null, vis: false }; c.el = st; live.add(c);
       if (vio) { stSet(st, 0); vio.observe(st); }   // without motion (or GSAP) the finished screen in the markup stays
       return c;
     };
@@ -698,7 +782,7 @@
 
   /* ---------- Abacus live UI: a practice sequence of bead moves, first with the card's entrance, then on a loop ---------- */
   (function abacus() {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = startedStill;
     const seg = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
     const io3 = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;   // beads: gentle start, firm settle
     const WIN = [[0.0263,0.1404],[0.1930,0.3070],[0.3596,0.4737],[0.5263,0.6404],[0.6930,0.8070],[0.8596,0.9737]];   // where each step sits in 0..1; beads in the same step share a window, so they move exactly together
@@ -707,18 +791,18 @@
       const beads = ab._mv || (ab._mv = $$('.ab-mv', ab).map(el => [el, WIN[+el.dataset.s], +el.dataset.dy]));
       for (const [el, w, dy] of beads) el.setAttribute('transform', 'translate(0 ' + (dy * io3(seg(p, w[0], w[1]))).toFixed(2) + ')');
     };
-    const vio = still ? null : new IntersectionObserver(es => es.forEach(e => { const c = e.target._c; if (!c) return; c.vis = e.isIntersecting; if (c.loop) c.loop.paused(!c.vis); }));
+    const vio = still ? null : new IntersectionObserver(es => es.forEach(e => { const c = e.target._c; if (!c) return; c.vis = e.isIntersecting; if (c.loop) c.loop.paused(halted(c)); }));
     /* s = entrance progress, q = the loop (holds, plays the sequence back in reverse, pauses, plays it again) */
     window.abCtl = ab => {
       if (ab._c) return ab._c;
-      const c = ab._c = { s: 0, q: 1, loop: null, vis: true };
+      const c = ab._c = { s: 0, q: 1, loop: null, vis: true }; c.el = ab; live.add(c);
       const draw = () => abSet(ab, c.s * c.q);
       c.start = () => {
         if (c.loop || still || !window.gsap) return;
         c.loop = gsap.timeline({ repeat: -1, delay: 2.2, repeatDelay: 2.2, onUpdate: draw })
           .to(c, { q: 0, duration: 2.736, ease: 'power1.inOut' })
           .to(c, { q: 1, duration: 6.384, ease: 'none' }, '+=.5');
-        if (!c.vis) c.loop.pause();
+        if (halted(c)) c.loop.pause();
       };
       c.stop = () => { if (!c.loop) return; c.loop.kill(); c.loop = null; gsap.to(c, { q: 1, duration: .45, ease: 'power2.out', onUpdate: draw }); };
       c.set = s => { c.s = s; if (s < .999) c.stop(); else c.start(); draw(); };
@@ -729,7 +813,7 @@
 
   /* ---------- MonMedX live UI: ECG traces in when the card appears, then sweeps on its own loop; toggles flip at random ---------- */
   (function monmedx() {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = startedStill;
     const PTS = [[430.0,578.0],[431.0,578.0],[431.25,578.01],[431.5,578.05],[431.75,578.16],[432.0,578.41],[432.25,578.81],[432.5,579.25],[432.75,579.49],[433.0,579.36],[433.25,578.9],[433.5,578.15],[433.75,576.87],[434.0,574.36],[434.25,569.93],[434.5,563.9],[434.75,558.32],[435.0,556.03],[435.25,558.44],[435.5,564.29],[435.75,570.89],[436.0,576.3],[436.25,580.06],[436.5,582.38],[436.75,583.38],[437.0,583.15],[437.25,582.0],[437.5,580.56],[437.75,579.34],[438.0,578.57],[438.25,578.2],[438.5,578.05],[438.75,578.0],[439.0,577.98],[439.25,577.96],[439.5,577.95],[440.5,577.8],[441.5,577.46],[442.5,576.83],[443.5,576.05],[444.5,575.48],[445.5,575.48],[446.5,576.05],[447.5,576.83],[448.5,577.46],[449.5,577.8],[450.5,577.95],[451.5,577.99],[452.5,577.98],[453.5,577.92],[454.5,577.68],[455.5,577.18],[456.5,576.6],[457.5,576.41],[458.5,576.81],[459.5,577.41],[460.5,577.81],[461.5,577.96],[462.5,577.99],[463.5,578.0],[464.5,578.01],[464.75,578.04],[465.0,578.13],[465.25,578.34],[465.5,578.72],[465.75,579.17],[466.0,579.47],[466.25,579.42],[466.5,579.01],[466.75,578.33],[467.0,577.2],[467.25,575.0],[467.5,570.98],[467.75,565.16],[468.0,559.26],[468.25,556.12],[468.5,557.61],[468.75,562.97],[469.0,569.62],[469.25,575.36],[469.5,579.43],[469.75,582.02],[470.0,583.29],[470.25,583.28],[470.5,582.28],[470.75,580.84],[471.0,579.55],[471.25,578.69],[471.5,578.25],[471.75,578.07],[472.0,578.0],[472.25,577.98],[472.5,577.97],[472.75,577.95],[473.0,577.93],[474.0,577.75],[475.0,577.35],[476.0,576.68],[477.0,575.9],[478.0,575.43],[479.0,575.56],[480.0,576.2],[481.0,576.97],[482.0,577.55],[483.0,577.84],[484.0,577.96],[485.0,577.99],[486.0,577.98],[487.0,577.89],[488.0,577.6],[489.0,577.06],[490.0,576.51],[491.0,576.45],[492.0,576.93],[493.0,577.51],[494.0,577.85],[495.0,577.97],[496.0,578.0],[497.0,578.0],[498.0,578.03],[498.25,578.1],[498.5,578.29],[498.75,578.63],[499.0,579.08],[499.25,579.43],[499.5,579.46],[499.75,579.12],[500.0,578.49],[500.25,577.48],[500.5,575.57],[500.75,571.95],[501.0,566.41],[501.25,560.31],[501.5,556.41],[501.75,556.94],[502.0,561.7],[502.25,568.32],[502.5,574.34],[502.75,578.75],[503.0,581.61],[503.25,583.14],[503.5,583.38],[503.75,582.53],[504.0,581.13],[504.25,579.78],[504.5,578.83],[504.75,578.31],[505.0,578.09],[505.25,578.01],[505.5,577.98],[505.75,577.97],[506.0,577.95],[506.25,577.93],[507.25,577.77],[508.25,577.38],[509.25,576.71],[510.25,575.94],[511.25,575.44],[512.25,575.54],[513.25,576.16],[514.25,576.94],[515.25,577.52],[516.25,577.84],[517.25,577.96],[518.25,577.99],[519.25,577.98],[520.25,577.9],[521.25,577.63],[522.25,577.09],[523.25,576.53],[524.25,576.44],[525.25,576.9],[526.25,577.49],[527.25,577.84],[528.25,577.97],[529.25,578.0],[530.25,578.0],[531.25,578.02],[531.5,578.08],[531.75,578.24],[532.0,578.55],[532.25,578.99],[532.5,579.38],[532.75,579.49],[533.0,579.21],[533.25,578.64],[533.5,577.73],[533.75,576.06],[534.0,572.84],[534.25,567.63],[534.5,561.45],[534.75,556.88],[535.0,556.45],[535.25,560.51],[535.5,566.98],[535.75,573.25],[536.0,578.0],[536.25,581.15],[536.5,582.93],[536.75,583.43],[537.0,582.77],[537.25,581.43],[537.5,580.02],[537.75,578.98],[538.0,578.39],[538.25,578.12],[538.5,578.02],[538.75,577.99],[539.0,577.97],[539.25,577.96],[539.5,577.94],[540.5,577.78],[541.5,577.4],[542.5,576.75],[543.5,575.98],[544.5,575.45],[545.5,575.52],[546.5,576.12],[547.5,576.9],[548.5,577.5],[549.5,577.83],[550.5,577.95],[551.5,577.99],[552.5,577.98],[553.5,577.91],[554.5,577.65],[555.5,577.12],[556.5,576.55],[557.5,576.43],[558.5,576.87],[559.5,577.46],[560.5,577.83],[561.5,577.96],[562.5,578.0],[563.5,578.0],[564.5,578.02],[564.75,578.06],[565.0,578.19],[565.25,578.48],[565.5,578.9],[565.75,579.32],[566.0,579.5],[566.25,579.29],[566.5,578.77],[566.75,577.95],[567.0,576.49],[567.25,573.64],[567.5,568.81],[567.75,562.66],[568.0,557.52],[568.25,556.14],[568.5,559.42],[568.75,565.63],[569.0,572.1],[569.25,577.18],[569.5,580.63],[569.75,582.68],[570.0,583.43],[570.25,582.97],[570.5,581.72],[570.75,580.28],[571.0,579.15],[571.25,578.47],[571.5,578.16],[571.75,578.03],[572.0,577.99],[572.25,577.97],[572.5,577.96],[572.75,577.94],[573.75,577.79],[574.75,577.43],[575.75,576.79],[576.75,576.01],[577.75,575.47],[578.75,575.5],[579.75,576.09],[580.75,576.87],[581.75,577.48],[582.75,577.81],[583.75,577.95],[584.75,577.99],[585.75,577.98],[586.75,577.91],[587.75,577.66],[588.75,577.15],[589.75,576.58],[590.75,576.42],[591.75,576.84],[592.75,577.44],[593.75,577.82],[594.75,577.96],[595.75,577.99],[596.75,578.0],[597.75,578.01],[598.0,578.05],[598.25,578.16],[598.5,578.41],[598.75,578.81],[599.0,579.25],[599.25,579.49],[599.5,579.36],[599.75,578.9],[600.0,578.15],[600.25,576.87],[600.5,574.36],[600.75,569.93],[601.0,563.9],[601.25,558.32],[601.5,556.03],[601.75,558.44],[602.0,564.29],[602.25,570.89],[602.5,576.3],[602.75,580.06],[603.0,582.38],[603.25,583.38],[603.5,583.15],[603.75,582.0],[604.0,580.56],[604.25,579.34],[604.5,578.57],[604.75,578.2],[605.0,578.05],[605.25,578.0],[605.5,577.98],[605.75,577.96],[606.0,577.95],[607.0,577.8],[608.0,577.46],[609.0,576.83],[610.0,576.05],[611.0,575.48],[612.0,575.48],[613.0,576.05],[614.0,576.83],[615.0,577.46],[616.0,577.8],[617.0,577.95],[618.0,577.99],[619.0,577.98],[620.0,577.92],[621.0,577.68],[622.0,577.18],[623.0,576.6],[624.0,576.41],[625.0,576.81],[626.0,577.41],[627.0,577.81],[628.0,577.96],[629.0,577.99],[630.0,578.0],[631.0,578.01],[631.25,578.04],[631.5,578.13],[631.75,578.34],[632.0,578.72],[632.25,579.17],[632.5,579.47],[632.75,579.42],[633.0,579.01],[633.25,578.33],[633.5,577.2],[633.75,575.0],[634.0,570.98],[634.25,565.16],[634.5,559.26],[634.75,556.12],[635.0,557.61],[635.25,562.97],[635.5,569.62],[635.75,575.36],[636.0,579.43],[636.25,582.02],[636.5,583.29],[636.75,583.28],[637.0,582.28],[637.25,580.84],[637.5,579.55],[637.75,578.69],[638.0,578.25],[638.25,578.07],[638.5,578.0],[638.75,577.98],[639.0,577.97],[639.25,577.95],[639.5,577.93],[640.5,577.75],[641.5,577.35],[642.5,576.68],[643.5,575.9],[644.5,575.43],[645.5,575.56],[646.5,576.2],[647.5,576.97],[648.5,577.55],[649.5,577.84],[650.5,577.96],[651.5,577.99],[652.5,578.0],[653.5,578.0],[654.5,578.0],[655.5,578.0],[656.5,578.0],[657.5,578.0],[658.5,578.0],[659.5,578.0]], X0 = 430.0, X1 = 660.0, GAP = 16;
     const yAt = x => { let i = 1; while (i < PTS.length - 1 && PTS[i][0] < x) i++; const [ax, ay] = PTS[i - 1], [bx, by] = PTS[i]; return ay + (by - ay) * Math.min(1, Math.max(0, (x - ax) / (bx - ax || 1))); };
     const seg = (a, b) => { const out = []; if (b <= a) return ''; out.push(a + ',' + yAt(a).toFixed(2)); for (const [x, y] of PTS) if (x > a && x < b) out.push(x + ',' + y); out.push(b + ',' + yAt(b).toFixed(2)); return out.join(' '); };
@@ -756,11 +840,11 @@
       const c = e.target._c; if (!c) return;
       c.vis = e.isIntersecting && e.intersectionRatio > .2;
       if (c.vis) c.begin();
-      c.tl.forEach(t => t.paused(!c.vis));
+      c.tl.forEach(t => t.paused(halted(c)));
     }), { threshold: [0, .2] });
     window.mxCtl = mx => {
       if (mx._c) return mx._c;
-      const c = mx._c = { s: 1, h: 0, tl: [], vis: false, began: false };
+      const c = mx._c = { s: 1, h: 0, tl: [], vis: false, began: false }; c.el = mx; live.add(c);
       const tgs = $$('.mx-tg', mx).map(g => ({ g, kn: $('.mx-kn', g), tr: $('.mx-tr', g), home: +g.dataset.on, v: +g.dataset.on, busy: false }));
       /* random flips on a continuous loop: every 0.45-0.9s one switch (sometimes two, a beat apart) changes state; switches that have wandered
          from their original setting are more likely to be picked, so the panel drifts but never ends up all changed */
@@ -768,7 +852,7 @@
         t.busy = true;
         const tw = gsap.to(t, { v: t.v > .5 ? 0 : 1, duration: .4, delay, ease: 'power2.inOut', onUpdate: () => drawTg(t),
           onComplete: () => { t.busy = false; c.tl = c.tl.filter(x => x !== tw); } });
-        c.tl.push(tw); if (!c.vis) tw.pause();
+        c.tl.push(tw); if (halted(c)) tw.pause();
       };
       const pick = () => {
         const free = tgs.filter(t => !t.busy); if (!free.length || tgs.length - free.length >= 2) return null;   // never more than two moving
@@ -780,7 +864,7 @@
         const a = pick(); if (a) flip(a, 0);
         if (Math.random() < .22) { const b = pick(); if (b) flip(b, .12 + Math.random() * .18); }
         const next = gsap.delayedCall(.45 + Math.random() * .45, () => { c.tl = c.tl.filter(x => x !== next); tick(); });
-        c.tl.push(next); if (!c.vis) next.pause();
+        c.tl.push(next); if (halted(c)) next.pause();
       };
       const d = () => draw(mx, c);
       c.begin = () => {
@@ -790,7 +874,7 @@
         c.tl.push(gsap.to(c, { s: 1, duration: 1.6, ease: 'power1.out', onUpdate: d, onComplete: () => {
           c.h = 0;
           c.tl.push(gsap.to(c, { h: 1, duration: 3.6, ease: 'none', repeat: -1, onUpdate: d }));                    // primary: monitor sweep
-          if (!c.vis) c.tl.forEach(t => t.pause());
+          if (halted(c)) c.tl.forEach(t => t.pause());
         } }));
       };
       if (vio) { c.s = 0; d(); vio.observe(mx); }   // without motion (or GSAP) the markup's full still trace stays as is
@@ -801,23 +885,23 @@
 
   /* ---------- Magrabi live UI: hearing-tech interface glows, scans and ripples; service cards rise in and take turns ---------- */
   (function magrabi() {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = startedStill;
     const CARDS = [136, 328, 520, 712], ORG = '518 222';
     /* time-based: starts once the card is on screen, keeps looping, and pauses while it's off screen */
     const vio = still || !window.gsap ? null : new IntersectionObserver(es => es.forEach(e => {
       const c = e.target._c; if (!c) return;
       c.vis = e.isIntersecting && e.intersectionRatio > .2;
       if (c.vis) c.begin();
-      c.tl.forEach(t => t.paused(!c.vis));
+      c.tl.forEach(t => t.paused(halted(c)));
     }), { threshold: [0, .2] });
     window.mgCtl = mg => {
       if (mg._c) return mg._c;
-      const c = mg._c = { tl: [], vis: false, began: false };
+      const c = mg._c = { tl: [], vis: false, began: false }; c.el = mg; live.add(c);
       const ga = $('.mg-glow-a', mg), gb = $('.mg-glow-b', mg), hud = $('.mg-hud', mg), rings = $$('.mg-ring', mg), arc = $('.mg-arc', mg);
       const cards = $$('.mg-card', mg), halos = $$('.mg-halo', mg), bar = $('.mg-bar', mg);
       c.begin = () => {
         if (c.began) return; c.began = true;
-        const add = t => { c.tl.push(t); if (!c.vis) t.pause(); return t; };
+        const add = t => { c.tl.push(t); if (halted(c)) t.pause(); return t; };
         /* 1. hearing interface: soft radial reveal outward from the ear, then a gentle breathing glow */
         add(gsap.timeline()
           .fromTo(ga, { '--d': 0, opacity: .55 }, { '--d': 150, duration: 1.5, ease: 'power2.out' })
@@ -857,19 +941,19 @@
 
   /* ---------- Cold room HMI live UI (visual demo only): temperature drift, compressor activity; CSS runs the rest ---------- */
   (function coldroom() {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = startedStill;
     const vio = still || !window.gsap ? null : new IntersectionObserver(es => es.forEach(e => {
       const c = e.target._c; if (!c) return;
       c.vis = e.isIntersecting && e.intersectionRatio > .15;
-      e.target.classList.toggle('run', c.vis);          // fans, coil glows and pulses (CSS) run only while on screen
+      e.target.classList.toggle('run', !halted(c));          // fans, coil glows and pulses (CSS) run only while on screen
       if (c.vis) c.begin();
-      c.tl.forEach(t => t.paused(!c.vis));
+      c.tl.forEach(t => t.paused(halted(c)));
     }), { threshold: [0, .15] });
     window.crCtl = cr => {
       if (cr._c) return cr._c;
-      const c = cr._c = { tl: [], vis: false, began: false, t: 23.18 };
+      const c = cr._c = { tl: [], vis: false, began: false, t: 23.18 }; c.el = cr; live.add(c);
       const txt = $('.cr-temp', cr), comps = $$('.cr-comp', cr);
-      const add = t => { c.tl = c.tl.filter(x => x.progress() < 1); c.tl.push(t); if (!c.vis) t.pause(); return t; };   // drop finished ones as we go
+      const add = t => { c.tl = c.tl.filter(x => x.progress() < 1); c.tl.push(t); if (halted(c)) t.pause(); return t; };   // drop finished ones as we go
       /* temperature: small, smooth moves inside 22.80-23.50, as a live reading would */
       const drift = () => {
         let next = c.t + (Math.random() < .5 ? -1 : 1) * (.04 + Math.random() * .2);
@@ -896,21 +980,21 @@
 
   /* ---------- Booka live UI: the salon photo drifts, a time slot is picked, the booking goes through and the bell rings ---------- */
   (function booka() {
-    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const still = startedStill;
     const SLOTS = [[497.5, 337.25], [540, 337.25], [582.5, 337.25]], BTN = [562, 402], HEART = [559.5, 74.6], BADGE = '643 32.8';
     const vio = still || !window.gsap ? null : new IntersectionObserver(es => es.forEach(e => {
       const c = e.target._c; if (!c) return;
       c.vis = e.isIntersecting && e.intersectionRatio > .2;
       if (c.vis) c.begin();
-      c.tl.forEach(t => t.paused(!c.vis));
+      c.tl.forEach(t => t.paused(halted(c)));
     }), { threshold: [0, .2] });
     window.bkCtl = bk => {
       if (bk._c) return bk._c;
-      const c = bk._c = { tl: [], vis: false, began: false };
+      const c = bk._c = { tl: [], vis: false, began: false }; c.el = bk; live.add(c);
       const hero = $('.bk-hero img', bk), photos = $$('.bk-ph img', bk), bell = $('.bk-bell img', bk);
       const slots = $$('.bk-slot', bk), press = $('.bk-press', bk), sheen = $('.bk-btn-sheen', bk), stars = $('.bk-star-sheen', bk);
       const heart = $('.bk-heart', bk), badge = $('.bk-badge', bk), tap = $('.bk-tap', bk);
-      const add = t => { c.tl = c.tl.filter(x => x.progress() < 1 || x.repeat() < 0); c.tl.push(t); if (!c.vis) t.pause(); return t; };
+      const add = t => { c.tl = c.tl.filter(x => x.progress() < 1 || x.repeat() < 0); c.tl.push(t); if (halted(c)) t.pause(); return t; };
       /* a soft tap ripple, the only "cursor" on the page */
       const tapAt = ([x, y], at, tl) => tl
         .set(tap, { attr: { cx: x, cy: y }, scale: .4, opacity: .34, svgOrigin: x + ' ' + y }, at)
@@ -969,6 +1053,7 @@
       w = r.width; h = r.height; cv.width = w * dpr; cv.height = h * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       dots = []; for (let y = GAP / 2; y < h; y += GAP) for (let x = GAP / 2; x < w; x += GAP) dots.push([x, y]);
       colors();
+      if (reduce || motion.paused) draw(0);   // resizing clears the canvas: redraw the still field
     }
     function draw(t) {
       ctx.clearRect(0, 0, w, h);
@@ -994,7 +1079,7 @@
     let skip = false;
     function frame(t) {
       requestAnimationFrame(frame);
-      if (!visible) return;
+      if (!visible || motion.paused) return;   // "Pause motion" holds the field still
       if (!fine && (skip = !skip)) return;   // touch screens: no cursor to follow, so 30fps is plenty and frees the main thread for taps
       if (m.tx < -9000 || m.x < -9000) { m.x = m.tx; m.y = m.ty; }
       else { m.x += (m.tx - m.x) * .12; m.y += (m.ty - m.y) * .12; }
@@ -1006,7 +1091,7 @@
     matchMedia('(prefers-color-scheme: dark)').addEventListener('change', colors);
     new MutationObserver(colors).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
     size(); addEventListener('resize', size);
-    if (reduce) draw(0); else requestAnimationFrame(frame);
+    if (reduce) draw(0); else { if (motion.paused) draw(0); requestAnimationFrame(frame); }
   })();
 
   /* ---------- marquee reacting to scroll velocity ---------- */
@@ -1018,7 +1103,7 @@
     if (document.fonts) document.fonts.ready.then(() => { W = unit.offsetWidth; });
     new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(mq.parentElement || mq);
     const loop = () => {
-      if (!onScreen) { velocity *= .92; return; }
+      if (!onScreen || motion.paused) { velocity *= .92; return; }   // "Pause motion" stops the band where it is
       if (velocity > .1) dir = -1; else if (velocity < -.1) dir = 1;
       const speed = .6 + Math.min(Math.abs(velocity) * .5, 14);
       x += speed * dir; if (x <= -W) x += W; if (x > 0) x -= W;
@@ -1031,6 +1116,9 @@
 
   /* ---------- word splitting ---------- */
   function splitWords(el) {
+    /* screen readers get the sentence once from a hidden copy; the animated word boxes are hidden from them,
+       otherwise VoiceOver on iPhone reads one word per swipe */
+    const full = el.textContent.replace(/\s+/g, ' ').trim();
     const walk = node => [...node.childNodes].forEach(n => {
       if (n.nodeType === 3) {
         const frag = document.createDocumentFragment();
@@ -1042,7 +1130,11 @@
         n.replaceWith(frag);
       } else if (n.nodeType === 1) walk(n);
     });
-    walk(el); return $$('.w', el);
+    walk(el);
+    const words = $$('.w', el);
+    words.forEach(w => w.setAttribute('aria-hidden', 'true'));
+    const copy = document.createElement('span'); copy.className = 'sr-only'; copy.textContent = full; el.prepend(copy);
+    return words;
   }
 
   /* ---------- case studies: full-screen view opened from each Selected work card ---------- */
@@ -1279,6 +1371,15 @@
 
     let openIdx = -1, lastFocus = null, io = null;
     const lock = on => { root.style.overflow = on ? 'hidden' : ''; if (lenis) on ? lenis.stop() : lenis.start(); };
+    /* while the case view is open, the page behind it can't take focus or be read (WCAG 2.4.3); the chat stays usable */
+    let benched = [];
+    const bench = on => {
+      if (on) {
+        if (benched.length) return;
+        benched = [...document.body.children].filter(el => el !== cs && el.id !== 'chat' && el.tagName !== 'SCRIPT' && !el.inert);
+        benched.forEach(el => { el.inert = true; });
+      } else { benched.forEach(el => { el.inert = false; }); benched = []; }
+    };
 
     const mini = arr => `<ul class="cs-mini">${arr.map(x => `<li>${esc(x)}</li>`).join('')}</ul>`;
     const lab = t => `<p class="cs-label mono">${esc(t)}</p>`;
@@ -1313,6 +1414,7 @@
     function killLive() {
       body.querySelectorAll('*').forEach(el => {
         const c = el._c || el._ctl; if (!c) return;
+        live.delete(c);
         if (c.loop) c.loop.kill();
         if (Array.isArray(c.tl)) c.tl.forEach(t => t.kill());
         el._c = el._ctl = null;
@@ -1366,7 +1468,7 @@
       const wasOpen = openIdx >= 0;
       openIdx = i;
       if (!wasOpen) lastFocus = document.activeElement;
-      cs.hidden = false;
+      cs.hidden = false; bench(true);
       document.title = CASES[i].title + ' \u2666 Adnan Afana';
       // let the tap paint first, then lock the page and build the (large) case page and slide it in
       afterPaint(() => {
@@ -1380,6 +1482,7 @@
     function closeCase(fromUi) {
       if (openIdx < 0) return;
       const i = openIdx; openIdx = -1;
+      bench(false);
       cs.classList.remove('open');
       setTimeout(() => { if (openIdx < 0) { killLive(); cs.hidden = true; body.innerHTML = ''; } }, reduce ? 0 : 700);
       document.title = BASE_TITLE;
@@ -1471,18 +1574,28 @@
   const nav = $('#nav');
   ScrollTrigger.create({ start: 0, end: 'max', onUpdate: s => nav.classList.toggle('is-hidden', s.direction === 1 && s.scroll() > 240) });
 
+  /* ---------- scroll reveals start faded, but that faded state is only applied just before a block scrolls into view.
+     Until then it is ordinary full-contrast text sitting off screen, so contrast checkers that never scroll (Lighthouse,
+     axe) measure the text people actually read. Visitors see exactly the same reveal as before. ---------- */
+  const near = (trigger, fn) => {
+    const el = typeof trigger === 'string' ? $(trigger) : trigger; if (!el) return;
+    if (el.getBoundingClientRect().top < innerHeight) { fn(); return; }
+    // armed in the same scroll update that brings its top edge on screen, before that frame is painted
+    ScrollTrigger.create({ trigger: el, start: 'top bottom', once: true, onEnter: fn });
+  };
+
   /* ---------- statement: scrubbed blur-to-sharp word reveal ---------- */
   const words = splitWords($('#statement'));
-  gsap.fromTo(words, { opacity: .18, filter: 'blur(8px)', yPercent: 28 }, {
+  near('#statement', () => gsap.fromTo(words, { opacity: .18, filter: 'blur(8px)', yPercent: 28 }, {
     opacity: 1, filter: 'blur(0px)', yPercent: 0, ease: 'none', stagger: .05,
     scrollTrigger: { trigger: '#statement', start: 'top 82%', end: 'bottom 55%', scrub: .8 }
-  });
-  gsap.from('.facts li', { y: 28, opacity: .2, duration: 1, ease: 'expo.out', stagger: .1, scrollTrigger: { trigger: '.facts', start: 'top 85%' } });
+  }));
+  near('.facts', () => gsap.from('.facts li', { y: 28, opacity: .2, duration: 1, ease: 'expo.out', stagger: .1, scrollTrigger: { trigger: '.facts', start: 'top 85%' } }));
 
   /* ---------- testimonials: first quote reveals like the statement ---------- */
   if ($('#tstStage')) {
-    gsap.from('#testimonials .tst-side > *', { y: 18, opacity: 0, duration: 1, ease: 'expo.out', stagger: .08, scrollTrigger: { trigger: '#testimonials', start: 'top 80%' } });
-    tstReveal($('#testimonials .tst.is-on'), { scrollTrigger: { trigger: '#tstStage', start: 'top 82%' } });
+    near('#testimonials', () => gsap.from('#testimonials .tst-side > *', { y: 18, opacity: 0, duration: 1, ease: 'expo.out', stagger: .08, scrollTrigger: { trigger: '#testimonials', start: 'top 80%' } }));
+    near('#tstStage', () => tstReveal($('#testimonials .tst.is-on'), { scrollTrigger: { trigger: '#tstStage', start: 'top 82%' } }));
   }
 
   /* ---------- redline measurements draw in ---------- */
@@ -1491,10 +1604,10 @@
   /* ---------- section headings ---------- */
   $$('[data-words]').forEach(h => {
     const w = splitWords(h);
-    gsap.from(w, { yPercent: 60, opacity: .15, filter: 'blur(6px)', duration: 1.1, ease: 'expo.out', stagger: .06, scrollTrigger: { trigger: h, start: 'top 86%' } });
+    near(h, () => gsap.from(w, { yPercent: 60, opacity: .15, filter: 'blur(6px)', duration: 1.1, ease: 'expo.out', stagger: .06, scrollTrigger: { trigger: h, start: 'top 86%' } }));
   });
   const cw = splitWords($('#contactTitle'));
-  gsap.fromTo(cw, { opacity: .15, yPercent: 40 }, { opacity: 1, yPercent: 0, ease: 'none', stagger: .06, scrollTrigger: { trigger: '#contactTitle', start: 'top 85%', end: 'bottom 60%', scrub: .8 } });
+  near('#contactTitle', () => gsap.fromTo(cw, { opacity: .15, yPercent: 40 }, { opacity: 1, yPercent: 0, ease: 'none', stagger: .06, scrollTrigger: { trigger: '#contactTitle', start: 'top 85%', end: 'bottom 60%', scrub: .8 } }));
 
   /* ---------- work: pinned horizontal gallery on desktop ---------- */
   const mm = gsap.matchMedia();
@@ -1547,7 +1660,22 @@
     const ltRows = $('.case .lt-rows'), ltThumb = $('.case .lt-thumb');
     if (ltRows) gsap.timeline({ scrollTrigger: { trigger: ltRows.closest('.case'), containerAnimation: tween, start: 'left 70%', end: 'right left', scrub: true } })
       .fromTo(ltRows, { yPercent: 0 }, { yPercent: -13, ease: 'none' }, 0).fromTo(ltThumb, { yPercent: 0 }, { yPercent: 50, ease: 'none' }, 0);
-    return () => {   // leaving the desktop layout: drop the sticky spacer
+    /* keyboard: Tab onto a card scrolls the PAGE to that card's spot in the gallery. Left alone, the browser would scroll
+       the clipped section sideways behind the animation and leave the gallery out of line (WCAG 2.4.3, 2.4.7) */
+    const unshift = () => { if (work.scrollLeft) work.scrollLeft = 0; };
+    const onFocus = e => {
+      const card = e.target.closest('.case'); if (!card) return;
+      unshift();
+      const st = tween.scrollTrigger, d = dist(); if (!st || !d) return;
+      const want = Math.min(d, Math.max(0, card.offsetLeft - (innerWidth - card.offsetWidth) / 2));
+      const y = st.start + (st.end - st.start) * (want / d);
+      if (lenis) lenis.scrollTo(y, { immediate: true, force: true }); else window.scrollTo(0, y);
+      ScrollTrigger.update();
+    };
+    work.addEventListener('scroll', unshift);
+    track.addEventListener('focusin', onFocus);
+    return () => {   // leaving the desktop layout: drop the sticky spacer and the keyboard handlers
+      work.removeEventListener('scroll', unshift); track.removeEventListener('focusin', onFocus);
       ScrollTrigger.removeEventListener('refreshInit', unstick);
       ScrollTrigger.removeEventListener('refresh', stick);
       work.style.position = ''; work.style.top = '';
@@ -1556,7 +1684,7 @@
   });
   mm.add('(max-width: 899px), (max-height: 559px)', () => {
     cards.forEach((card, i) => {
-      gsap.from(card, { y: 50, opacity: .2, duration: 1.1, ease: 'expo.out', scrollTrigger: { trigger: card, start: 'top 88%', onEnter: () => { if (workCount) workCount.textContent = String(i + 1).padStart(2, '0'); } } });
+      near(card, () => gsap.from(card, { y: 50, opacity: .2, duration: 1.1, ease: 'expo.out', scrollTrigger: { trigger: card, start: 'top 88%', onEnter: () => { if (workCount) workCount.textContent = String(i + 1).padStart(2, '0'); } } }));
       const lt = $('.lt', card);
       if (lt && window.ltGauge) {  /* gauge draws with the card's slide-in: same trigger and easing, a touch quicker */
         const g = { p: 0 }; lt.classList.add('gs'); ltCtl(lt).set(0);
@@ -1576,8 +1704,8 @@
 
 
   /* ---------- experience rows ---------- */
-  gsap.from('.row', { y: 30, opacity: .2, duration: 1, ease: 'expo.out', stagger: .08, scrollTrigger: { trigger: '.rows', start: 'top 85%' } });
-  gsap.from('.toolkit .chip', { y: 12, opacity: 0, duration: .7, ease: 'expo.out', stagger: .04, scrollTrigger: { trigger: '.toolkit', start: 'top 92%' } });
+  near('.rows', () => gsap.from('.row', { y: 30, opacity: .2, duration: 1, ease: 'expo.out', stagger: .08, scrollTrigger: { trigger: '.rows', start: 'top 85%' } }));
+  near('.toolkit', () => gsap.from('.toolkit .chip', { y: 12, opacity: 0, duration: .7, ease: 'expo.out', stagger: .04, scrollTrigger: { trigger: '.toolkit', start: 'top 92%' } }));
 
   /* (fonts.ready already refreshes ScrollTrigger once, right after fitting the headline; a second full refresh here only cost time) */
 })();

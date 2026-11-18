@@ -20,18 +20,18 @@
 .rg-row .rg-f+.rg-f{padding-left:clamp(10px,1.3vw,16px)}
 .rg-f{margin:0;min-width:0;border:0;border-bottom:1px solid var(--line);padding:clamp(20px,2.6vw,32px);display:flex;flex-direction:column;gap:12px}
 .rg-l{padding:0;display:flex;align-items:baseline;gap:6px;font-family:var(--f-display);font-weight:700;font-stretch:104%;font-size:clamp(18px,1.5vw,21px);line-height:1.2;letter-spacing:-.01em}
-.rg-l i{font-style:normal;color:var(--redline)}
+.rg-l i{font-style:normal;color:var(--redline-text)}
 legend.rg-l{float:left;width:100%;margin-bottom:12px}
 legend.rg-l+*{clear:both}
 .rg-honey{position:absolute!important;left:-9999px;width:1px;height:1px;opacity:0}
 
 .rg-f input:not([type=checkbox]):not([type=radio]),.rg-f textarea{width:100%;box-sizing:border-box;font:inherit;font-family:var(--f-body);font-size:17px;
-  padding:14px 16px;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:0;transition:border-color .25s,box-shadow .25s}
+  padding:14px 16px;border:1px solid var(--field-line);background:var(--paper);color:var(--ink);border-radius:0;transition:border-color .25s,box-shadow .25s}
 .rg-f textarea{resize:vertical;min-height:88px;line-height:1.45}
-.rg-f input::placeholder,.rg-f textarea::placeholder{color:color-mix(in srgb,var(--muted) 75%,transparent)}
+.rg-f input::placeholder,.rg-f textarea::placeholder{color:var(--muted)}   /* the only visible label on two fields, so it needs 4.5:1 */
 .rg-f input:focus,.rg-f textarea:focus{outline:none;border-color:var(--redline);box-shadow:0 0 0 3px color-mix(in srgb,var(--redline) 16%,transparent)}
 .rg-f.is-bad input{border-color:var(--redline)}
-.rg-err{font-style:normal;font-size:13px;color:var(--redline)}
+.rg-err{font-style:normal;font-size:13px;color:var(--redline-text)}
 .rg-err:empty{display:none}
 
 /* chips (real checkboxes / radios, visually styled) */
@@ -51,7 +51,7 @@ legend.rg-l+*{clear:both}
 .rg-submit{padding:clamp(20px,2.6vw,32px);display:flex;flex-direction:column;gap:12px}
 .rg-send{width:100%;height:58px;justify-content:center;cursor:pointer;font:inherit;font-size:14px}
 .rg-send[disabled]{opacity:.6;cursor:progress}
-.rg-fail{margin:0;font-size:14px;color:var(--redline);line-height:1.45}
+.rg-fail{margin:0;font-size:14px;color:var(--redline-text);line-height:1.45}
 
 /* done / closed */
 .rg-done{padding:clamp(28px,4vw,56px);display:flex;flex-direction:column;align-items:flex-start;gap:14px}
@@ -76,7 +76,7 @@ legend.rg-l+*{clear:both}
 .rg-meta dt{color:color-mix(in srgb,var(--paper) 60%,transparent);font-size:10px}
 .rg-meta dd{margin:0;font-size:15px;line-height:1.45}
 .rg-meta a{color:inherit;text-decoration:underline;text-underline-offset:3px;text-decoration-color:color-mix(in srgb,var(--paper) 40%,transparent)}
-.rg-meta a:hover{color:var(--redline)}
+.rg-meta a:hover{color:var(--redline-text)}
 
 .rg-foot{margin-top:clamp(64px,8vw,120px);padding-bottom:calc(28px + env(safe-area-inset-bottom,0px))}
 
