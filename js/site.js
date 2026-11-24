@@ -38,6 +38,17 @@
     if (c.el && c.el.classList.contains('cr')) c.el.classList.toggle('run', !halted(c));
   };
   motion.subs.add(() => live.forEach(applyLive));
+  /* taps come first (INP): from the moment a finger or mouse button goes down until the answer has painted, the live
+     card UIs hold still for a moment (about a quarter second, too short to notice), so the main thread is free to respond.
+     A finger that starts scrolling instead (pointercancel) lets them run again right away. */
+  let hushT = 0;
+  const unhush = () => { clearTimeout(hushT); hushT = 0; live.forEach(applyLive); };
+  addEventListener('pointerdown', () => {
+    if (!live.size) return;
+    live.forEach(c => { if (Array.isArray(c.tl)) c.tl.forEach(t => t.paused(true)); if (c.loop) c.loop.paused(true); });
+    clearTimeout(hushT); hushT = setTimeout(unhush, 260);
+  }, { capture: true, passive: true });
+  addEventListener('pointercancel', () => { if (hushT) unhush(); }, { capture: true, passive: true });
 
   /* ---------- "My time" clock (Eastern time); stops with "Pause motion" ---------- */
   const fmt = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Toronto', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
@@ -533,7 +544,10 @@
   }
   function curtain(v, show, swap) {
     const vt = $('#vt'), slats = $$('#vt i'), lbl = $('#vtLabel');
-    lbl.textContent = ($('[data-view="' + v + '"]') || {}).textContent || (v === 'work' ? 'Work' : 'In the field');
+    // the tab's real name, not its text: on a tap the tab's letters are still shuffling (scramble), and copying them
+    // mid-shuffle put symbols like "*= <*< |=<*>" on the curtain
+    const tab = $('[data-view="' + v + '"]');
+    lbl.textContent = (tab && (tab.dataset.final || tab.getAttribute('aria-label'))) || (v === 'work' ? 'Work' : 'In the field');
     vt.classList.add('on');
     gsap.timeline({ onComplete: () => { vt.classList.remove('on'); gsap.set(slats, { clearProps: 'transform,transformOrigin' }); switching = false; } })
       .set(slats, { transformOrigin: '50% 100%' })
@@ -1041,9 +1055,35 @@
   })();
 
   /* ---------- hero dot field ---------- */
-  const heroState = { p: 0 };
+  const heroState = { p: 0, post: null, set(v) { this.p = v; if (this.post) this.post(v); } };
   (function dotField() {
-    const cv = $('#field'), ctx = cv.getContext('2d'), host = $('#hero');
+    const cv = $('#field'), host = $('#hero');
+    /* Where the browser allows it, the field is drawn in a background thread (js/field-worker.js), same drawing.
+       Then the canvas costs the page's main thread nothing, and taps get their answer on the very next frame (INP). */
+    if (!reduce && typeof Worker === 'function' && 'transferControlToOffscreen' in cv && typeof OffscreenCanvas === 'function') {
+      try {
+        const wk = new Worker('/js/field-worker.js');
+        const off = cv.transferControlToOffscreen();
+        const dpr = () => Math.min(2, devicePixelRatio || 1);
+        const col = () => { const s = getComputedStyle(root); return { ink: s.getPropertyValue('--muted').trim() || '#5F635C', red: s.getPropertyValue('--redline').trim() || '#D3126C' }; };
+        let r = cv.getBoundingClientRect();
+        wk.postMessage({ type: 'init', canvas: off, w: r.width, h: r.height, dpr: dpr(), fine, paused: motion.paused, ...col() }, [off]);
+        heroState.post = v => wk.postMessage({ type: 'p', p: v });
+        let box = null;   // hero box, measured once per pointer entry instead of on every move
+        host.addEventListener('pointerenter', () => { box = null; });
+        host.addEventListener('pointermove', e => { if (!box) box = cv.getBoundingClientRect(); wk.postMessage({ type: 'm', x: e.clientX - box.left, y: e.clientY - box.top }); });
+        host.addEventListener('pointerleave', () => { box = null; wk.postMessage({ type: 'm', x: -1e4, y: -1e4 }); });
+        addEventListener('scroll', () => { box = null; }, { passive: true });
+        new IntersectionObserver(([en]) => wk.postMessage({ type: 'vis', v: en.isIntersecting })).observe(host);
+        motion.subs.add(v => wk.postMessage({ type: 'paused', v }));
+        const sendColors = () => wk.postMessage({ type: 'colors', ...col() });
+        matchMedia('(prefers-color-scheme: dark)').addEventListener('change', sendColors);
+        new MutationObserver(sendColors).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+        addEventListener('resize', () => { r = cv.getBoundingClientRect(); box = null; wk.postMessage({ type: 'size', w: r.width, h: r.height, dpr: dpr() }); });
+        return;
+      } catch (e) { /* fall through to drawing on the main thread */ }
+    }
+    const ctx = cv.getContext('2d');
     const GAP = 26, R = 170;
     let w = 0, h = 0, dots = [], visible = true, ink = '#5F635C', red = '#D3126C';
     const m = { x: -1e4, y: -1e4, tx: -1e4, ty: -1e4 };
@@ -1094,24 +1134,67 @@
     if (reduce) draw(0); else { if (motion.paused) draw(0); requestAnimationFrame(frame); }
   })();
 
-  /* ---------- marquee reacting to scroll velocity ---------- */
+  /* ---------- marquee reacting to scroll velocity ----------
+     The steady drift is a browser animation of the `translate` property, which the compositor runs on its own,
+     so a band that is just drifting costs the page's main thread nothing (it used to restyle the band on every
+     frame, which kept the main thread busy and made taps wait: INP). Scrolling still speeds it up, reverses it
+     and skews it exactly as before; that per-frame work runs only while the scroll's momentum lasts. */
   (function marquee() {
     if (reduce) return;
     const mq = $('#mq'), unit = $('.mq-inner', mq);
     let x = 0, dir = -1, W = unit.offsetWidth, skew = 0, onScreen = true;
-    addEventListener('resize', () => { W = unit.offsetWidth; });
-    if (document.fonts) document.fonts.ready.then(() => { W = unit.offsetWidth; });
-    new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(mq.parentElement || mq);
-    const loop = () => {
-      if (!onScreen || motion.paused) { velocity *= .92; return; }   // "Pause motion" stops the band where it is
+    const canAnimate = typeof mq.animate === 'function' && window.CSS && CSS.supports('translate', '1px 0');
+    if (!canAnimate) {   // older browsers: the original per-frame loop
+      addEventListener('resize', () => { W = unit.offsetWidth; });
+      if (document.fonts) document.fonts.ready.then(() => { W = unit.offsetWidth; });
+      new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; }).observe(mq.parentElement || mq);
+      const loop = () => {
+        if (!onScreen || motion.paused) { velocity *= .92; return; }   // "Pause motion" stops the band where it is
+        if (velocity > .1) dir = -1; else if (velocity < -.1) dir = 1;
+        const speed = .6 + Math.min(Math.abs(velocity) * .5, 14);
+        x += speed * dir; if (x <= -W) x += W; if (x > 0) x -= W;
+        skew += ((Math.max(-8, Math.min(8, velocity * .35))) - skew) * .12;
+        mq.style.transform = `translate3d(${x}px,0,0) skewX(${-skew}deg)`;
+        velocity *= .92;
+      };
+      if (hasGsap) gsap.ticker.add(loop); else { const r = () => { loop(); requestAnimationFrame(r); }; requestAnimationFrame(r); }
+      return;
+    }
+    const PX_PER_S = 36;   // 0.6px per frame at 60fps, the band's resting speed
+    const dur = () => Math.max(1, W) / PX_PER_S * 1000;
+    const anim = mq.animate([{ translate: '0px 0px' }, { translate: `${-W}px 0px` }], { duration: dur(), iterations: Infinity, easing: 'linear' });
+    anim.currentTime = dur() * 1e4;   // far from the start, so running it backwards (scrolling up) never reaches the beginning
+    let rate = 1;
+    const setRate = r => { if (Math.abs(r - rate) < .005) return; rate = r; if (anim.updatePlaybackRate) anim.updatePlaybackRate(r); else anim.playbackRate = r; };
+    const run = () => { if (onScreen && !motion.paused) anim.play(); else anim.pause(); };   // off screen or "Pause motion": the band stops where it is
+    const remeasure = () => {
+      const w = unit.offsetWidth; if (!w || w === W) return;
+      const prog = (anim.currentTime % dur()) / dur();
+      W = w; anim.effect.setKeyframes([{ translate: '0px 0px' }, { translate: `${-W}px 0px` }]);
+      anim.effect.updateTiming({ duration: dur() }); anim.currentTime = dur() * (1e4 + prog);
+    };
+    addEventListener('resize', remeasure);
+    if (document.fonts) document.fonts.ready.then(remeasure);
+    new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; run(); }).observe(mq.parentElement || mq);
+    motion.subs.add(run); run();
+    let awake = false;
+    const sleep = () => { awake = false; if (hasGsap) gsap.ticker.remove(tick); };
+    function tick() {
+      if (!awake) return;
+      if (!onScreen || motion.paused) { velocity *= .92; if (Math.abs(velocity) < .01) { velocity = 0; sleep(); } return; }
       if (velocity > .1) dir = -1; else if (velocity < -.1) dir = 1;
       const speed = .6 + Math.min(Math.abs(velocity) * .5, 14);
-      x += speed * dir; if (x <= -W) x += W; if (x > 0) x -= W;
+      setRate(-dir * speed / .6);
       skew += ((Math.max(-8, Math.min(8, velocity * .35))) - skew) * .12;
-      mq.style.transform = `translate3d(${x}px,0,0) skewX(${-skew}deg)`;
       velocity *= .92;
-    };
-    if (hasGsap) gsap.ticker.add(loop); else { const r = () => { loop(); requestAnimationFrame(r); }; requestAnimationFrame(r); }
+      if (Math.abs(velocity) < .01 && Math.abs(skew) < .01) {   // momentum spent: back to the plain drift, and stop ticking
+        velocity = 0; skew = 0; mq.style.transform = ''; setRate(-dir); sleep(); return;
+      }
+      mq.style.transform = `skewX(${-skew}deg)`;
+      if (!hasGsap) requestAnimationFrame(tick);
+    }
+    const wake = () => { if (awake) return; awake = true; if (hasGsap) gsap.ticker.add(tick); else requestAnimationFrame(tick); };
+    addEventListener('scroll', wake, { passive: true });
   })();
 
   /* ---------- word splitting ---------- */
@@ -1468,11 +1551,13 @@
       const wasOpen = openIdx >= 0;
       openIdx = i;
       if (!wasOpen) lastFocus = document.activeElement;
-      cs.hidden = false; bench(true);
+      cs.hidden = false;
       document.title = CASES[i].title + ' \u2666 Adnan Afana';
-      // let the tap paint first, then lock the page and build the (large) case page and slide it in
+      // let the tap paint first, then set the page behind aside (inert restyles the whole page), lock it,
+      // and build the (large) case page and slide it in
       afterPaint(() => {
         if (openIdx !== i) return;
+        bench(true);
         if (!wasOpen) lock(true);
         render(i);
         requestAnimationFrame(() => requestAnimationFrame(() => cs.classList.add('open')));
@@ -1482,7 +1567,6 @@
     function closeCase(fromUi) {
       if (openIdx < 0) return;
       const i = openIdx; openIdx = -1;
-      bench(false);
       cs.classList.remove('open');
       setTimeout(() => { if (openIdx < 0) { killLive(); cs.hidden = true; body.innerHTML = ''; } }, reduce ? 0 : 700);
       document.title = BASE_TITLE;
@@ -1490,6 +1574,7 @@
       // unlock the page and move focus after the slide-out has started painting
       afterPaint(() => {
         if (openIdx >= 0) return;
+        bench(false);
         lock(false);
         const back = (cards[i] && $('.case-link', cards[i])) || lastFocus;
         if (back && back.focus) back.focus({ preventScroll: true });
@@ -1566,7 +1651,7 @@
   })();
 
   /* ---------- hero scroll-out ---------- */
-  gsap.timeline({ scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true, onUpdate: s => heroState.p = s.progress } })
+  gsap.timeline({ scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true, onUpdate: s => heroState.set(s.progress) } })
     .to('.hero .line', { yPercent: i => -18 * (i + 1), ease: 'none' }, 0)
     .to('.hero-foot', { y: -40, opacity: .3, ease: 'none' }, 0);
 
