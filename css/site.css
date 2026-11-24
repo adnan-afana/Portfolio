@@ -133,8 +133,13 @@ html.is-settling main,html.is-settling #chat{visibility:hidden;animation:settleF
 .mail-ico path{stroke-dasharray:16;animation:mailFlap 6s ease-in-out infinite}
 @keyframes mailBob{0%,80%,100%{transform:translateY(0) rotate(0)}85%{transform:translateY(-2px) rotate(-9deg)}90%{transform:translateY(-1px) rotate(7deg)}95%{transform:translateY(0) rotate(-3deg)}98%{transform:rotate(0)}}
 @keyframes mailFlap{0%,76%{stroke-dashoffset:0}84%{stroke-dashoffset:16}93%,100%{stroke-dashoffset:0}}
-.pulse{width:7px;height:7px;border-radius:50%;background:var(--redline);box-shadow:0 0 0 0 var(--redline);animation:pulse 2.2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--redline) 60%,transparent)}70%{box-shadow:0 0 0 9px transparent}100%{box-shadow:0 0 0 0 transparent}}
+/* pulsing dots: the ring is a scaled, fading copy of the dot (transform + opacity), so it runs on the compositor
+   and never makes the page's main thread repaint. Looks the same as the old animated box-shadow ring (0 → 9px). */
+.pulse{position:relative;width:7px;height:7px;--ring:3.571}
+.pulse::before,.chat-dot::before{content:"";position:absolute;inset:0;z-index:1;border-radius:50%;background:var(--redline)}   /* the dot, above its ring */
+.pulse::after,.chat-dot::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--redline);pointer-events:none;
+  opacity:0;animation:pulse 2.2s infinite}
+@keyframes pulse{0%{transform:scale(1);opacity:.6}70%{transform:scale(var(--ring));opacity:0}100%{transform:scale(1);opacity:0}}
 
 /* ---------- hero ---------- */
 .hero{position:relative;padding-block:clamp(150px,22vh,230px) clamp(56px,8vw,110px);isolation:isolate}
@@ -169,7 +174,7 @@ html.is-settling main,html.is-settling #chat{visibility:hidden;animation:settleF
 
 /* ---------- marquee ---------- */
 .band{border-block:1px solid var(--line);overflow:hidden;padding-block:clamp(14px,2vw,22px)}
-.mq{display:flex;width:max-content;will-change:transform}
+.mq{display:flex;width:max-content;will-change:transform,translate}
 .mq-inner{display:flex;align-items:center;flex-shrink:0}
 .mq-item{display:flex;align-items:center;gap:clamp(18px,2.4vw,36px);padding-right:clamp(18px,2.4vw,36px);
   font-family:var(--f-display);font-weight:700;font-stretch:75%;text-transform:uppercase;font-size:clamp(32px,5.4vw,84px);line-height:1;letter-spacing:-.01em;white-space:nowrap}
@@ -720,8 +725,8 @@ section{position:relative}
 .chat{position:fixed;z-index:170;right:max(20px, env(safe-area-inset-right,0px));bottom:max(20px, env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;align-items:flex-end;gap:12px}
 .chat-fab{display:flex;align-items:center;gap:10px;padding:13px 18px;background:var(--ink);color:var(--paper);font-size:12px;box-shadow:0 10px 30px color-mix(in srgb,var(--ink) 25%,transparent);transition:transform .4s var(--ease),background-color .3s,color .3s}
 .chat-fab:hover,.chat-fab:focus-visible{background:var(--redline);color:var(--on-red);transform:translateY(-2px)}
-.chat-dot{width:8px;height:8px;border-radius:50%;background:var(--redline);animation:pulse 2.2s infinite}
-.chat-fab:hover .chat-dot,.chat-fab:focus-visible .chat-dot{background:var(--on-red)}
+.chat-dot{position:relative;width:8px;height:8px;--ring:3.25}
+.chat-fab:hover .chat-dot::before,.chat-fab:focus-visible .chat-dot::before{background:var(--on-red)}
 .chat-panel{width:min(380px, calc(100vw - 32px));max-height:min(560px, calc(100vh - 120px));display:flex;flex-direction:column;background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:0 24px 60px color-mix(in srgb,var(--ink) 22%,transparent);transform-origin:100% 100%}
 .chat-panel:not([hidden]){animation:chatIn .45s var(--ease)}
 @keyframes chatIn{from{opacity:0;transform:translateY(12px) scale(.98)}}
@@ -1048,7 +1053,7 @@ section{position:relative}
 }
 @media (prefers-reduced-motion:reduce){.fld-live{animation:none}}
 @media (prefers-reduced-motion:reduce){
-  .grain,.pulse,.edge::after,.playhead,.mail-ico,.mail-ico path,.chat-dot,.chat-panel{animation:none}
+  .grain,.pulse::after,.edge::after,.playhead,.mail-ico,.mail-ico path,.chat-dot::after,.chat-panel{animation:none}
   *{transition-duration:0s!important}   /* 0s, not .01ms: a non-zero duration made every property (font-size included) transition, so measurements read stale values */
 }
 
@@ -1099,7 +1104,7 @@ h2.eyebrow{font-weight:400;line-height:inherit}
 }
 
 /* "Pause motion": stop every looping CSS animation (one-off entrances are left alone so content never freezes half-shown) */
-.motion-paused .grain,.motion-paused .mail-ico,.motion-paused .mail-ico path,.motion-paused .pulse,.motion-paused .chat-dot,
+.motion-paused .grain,.motion-paused .mail-ico,.motion-paused .mail-ico path,.motion-paused .pulse::after,.motion-paused .chat-dot::after,
 .motion-paused .fld-live,.motion-paused .lt-vf,.motion-paused .lt-vf::before,.motion-paused .mx-ring,.motion-paused .mx-ring2,
 .motion-paused .cr-fan,.motion-paused .cr-coil,.motion-paused .cr-ping,.motion-paused .cr-auto{animation-play-state:paused!important}
 
