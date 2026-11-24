@@ -544,7 +544,10 @@
   }
   function curtain(v, show, swap) {
     const vt = $('#vt'), slats = $$('#vt i'), lbl = $('#vtLabel');
-    lbl.textContent = ($('[data-view="' + v + '"]') || {}).textContent || (v === 'work' ? 'Work' : 'In the field');
+    // the tab's real name, not its text: on a tap the tab's letters are still shuffling (scramble), and copying them
+    // mid-shuffle put symbols like "*= <*< |=<*>" on the curtain
+    const tab = $('[data-view="' + v + '"]');
+    lbl.textContent = (tab && (tab.dataset.final || tab.getAttribute('aria-label'))) || (v === 'work' ? 'Work' : 'In the field');
     vt.classList.add('on');
     gsap.timeline({ onComplete: () => { vt.classList.remove('on'); gsap.set(slats, { clearProps: 'transform,transformOrigin' }); switching = false; } })
       .set(slats, { transformOrigin: '50% 100%' })
